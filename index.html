@@ -3,603 +3,2049 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LMM Command Center</title>
+<title>LuxeBeam Ops — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 16px; }
-  
-  h1 { font-size: 20px; color: #fff; margin-bottom: 4px; }
-  .subtitle { font-size: 12px; color: #666; margin-bottom: 24px; }
-  
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; }
-  .tab { padding: 8px 14px; border-radius: 6px; background: #1a1a1a; color: #888; font-size: 13px; cursor: pointer; border: 1px solid #222; }
-  .tab.active { background: #222; color: #fff; border-color: #444; }
-  
-  .panel { display: none; }
-  .panel.active { display: block; }
-  
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .stat-card { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; }
-  .stat-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-  .stat-card .value { font-size: 24px; font-weight: 700; color: #fff; margin-top: 4px; }
-  .stat-card .detail { font-size: 11px; color: #888; margin-top: 2px; }
-  .stat-card.green .value { color: #4ade80; }
-  .stat-card.yellow .value { color: #fbbf24; }
-  .stat-card.red .value { color: #f87171; }
-  .stat-card.blue .value { color: #60a5fa; }
-  
-  .product-grid { display: grid; gap: 16px; }
-  .product-card { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 20px; }
-  .product-card h3 { font-size: 16px; color: #fff; margin-bottom: 4px; }
-  .product-card .slug { font-size: 11px; color: #666; margin-bottom: 12px; }
-  .product-card .status { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .status.live { background: #14532d; color: #4ade80; }
-  .status.active { background: #422006; color: #fbbf24; }
-  .status.broken { background: #450a0a; color: #f87171; }
-  .status.v2 { background: #1e1b4b; color: #818cf8; }
-  
-  .page-links { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .page-link { padding: 4px 10px; border-radius: 4px; font-size: 12px; text-decoration: none; background: #1a1a1a; border: 1px solid #222; }
-  .page-link.ok { color: #4ade80; border-color: #14532d; }
-  .page-link.v2 { color: #818cf8; border-color: #312e81; }
-  .page-link.broken { color: #f87171; border-color: #450a0a; }
-  
-  .issues { margin-top: 10px; }
-  .issue { font-size: 12px; color: #f87171; padding: 2px 0; }
-  .issue::before { content: "⚠️ "; }
-  .done { font-size: 12px; color: #4ade80; padding: 2px 0; }
-  .done::before { content: "✅ "; }
-  .pending { font-size: 12px; color: #fbbf24; padding: 2px 0; }
-  .pending::before { content: "⏳ "; }
-  
-  .system-card { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-  .system-card h4 { font-size: 14px; color: #fff; margin-bottom: 6px; }
-  .system-card .sys-status { font-size: 12px; margin-bottom: 4px; }
-  .system-card .sys-detail { font-size: 11px; color: #888; }
-  .green-text { color: #4ade80; }
-  .yellow-text { color: #fbbf24; }
-  .red-text { color: #f87171; }
-  .blue-text { color: #60a5fa; }
-  
-  .skill-list { list-style: none; }
-  .skill-list li { padding: 8px 12px; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
-  .skill-list .source { color: #60a5fa; font-size: 11px; }
-  .skill-list .agents { color: #666; font-size: 11px; }
-  
-  .luxebeam-pages { display: grid; gap: 12px; }
-  .lux-card { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; }
-  .lux-card h4 { font-size: 14px; color: #fff; margin-bottom: 8px; }
-  .lux-card .url { font-size: 11px; color: #60a5fa; word-break: break-all; text-decoration: none; display: block; margin-bottom: 4px; }
-  .lux-card .meta { font-size: 11px; color: #666; }
-  .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-right: 4px; }
-  .tag.shopify { background: #1a1a2a; color: #818cf8; }
-  .tag.github { background: #1a2a1a; color: #4ade80; }
-  .tag.v2-pushed { background: #1e1b4b; color: #a78bfa; }
-  .tag.images-pending { background: #422006; color: #fbbf24; }
-  .tag.ecomwize-clean { background: #14532d; color: #4ade80; }
-  .tag.ecomwize-dirty { background: #450a0a; color: #f87171; }
-  
-  .tool-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 6px; padding: 12px; margin-bottom: 8px; }
-  .tool-card code { color: #c9873a; font-size: 12px; }
-  .tool-card .desc { font-size: 12px; color: #888; margin-top: 4px; }
-  .tool-card .loc { font-size: 10px; color: #555; margin-top: 2px; }
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0a0a0a;
+  color: #e4e4e7;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+}
 
-  .timeline { border-left: 2px solid #222; margin-left: 8px; padding-left: 16px; }
-  .timeline-item { margin-bottom: 12px; position: relative; }
-  .timeline-item::before { content: ""; position: absolute; left: -21px; top: 4px; width: 10px; height: 10px; border-radius: 50%; }
-  .timeline-item.done::before { background: #4ade80; }
-  .timeline-item.active::before { background: #fbbf24; }
-  .timeline-item.pending::before { background: #333; }
-  .timeline-item .time { font-size: 10px; color: #555; }
-  .timeline-item .desc { font-size: 12px; color: #ccc; }
-  
-  @media (max-width: 600px) {
-    .stats { grid-template-columns: repeat(2, 1fr); }
+/* ===== VARIABLES ===== */
+:root {
+  --purple: #7c3aed;
+  --purple-dim: rgba(124, 58, 237, 0.15);
+  --purple-glow: rgba(124, 58, 237, 0.3);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59, 130, 246, 0.15);
+  --green: #22c55e;
+  --green-dim: rgba(34, 197, 94, 0.15);
+  --yellow: #eab308;
+  --yellow-dim: rgba(234, 179, 8, 0.15);
+  --orange: #f97316;
+  --orange-dim: rgba(249, 115, 22, 0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239, 68, 68, 0.15);
+  --gray: #71717a;
+  --card-bg: #111113;
+  --card-border: #1e1e1e;
+  --card-hover: #1a1a1d;
+  --sidebar-w: 260px;
+  --muted: #71717a;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: var(--sidebar-w);
+  height: 100vh;
+  overflow-y: auto;
+  background: #111113;
+  border-right: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+.sidebar-logo {
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--card-border);
+}
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--purple);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 0;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.03);
+  color: #e4e4e7;
+}
+.nav-item.active {
+  border-left-color: var(--purple);
+  background: var(--purple-dim);
+  color: #fff;
+}
+.nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.nav-item.active .nav-badge {
+  background: var(--purple-glow);
+  color: #c4b5fd;
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--card-border);
+  font-size: 12px;
+  color: #52525b;
+}
+
+/* ===== HAMBURGER (mobile) ===== */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  width: 44px;
+  height: 44px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 90;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  padding: 32px 40px;
+}
+
+/* ===== LOADING / ERROR ===== */
+.loading-screen, .error-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  flex-direction: column;
+  gap: 16px;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--card-border);
+  border-top-color: var(--purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-screen { color: var(--red); }
+.error-screen .error-msg { color: var(--muted); font-size: 14px; }
+
+/* ===== TAB CONTENT ===== */
+.tab-content { display: none; animation: fadeIn 0.3s ease; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== SECTION HEADERS ===== */
+.section-header {
+  margin-bottom: 24px;
+}
+.section-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.section-subtitle {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-purple { background: var(--purple-dim); color: #c4b5fd; }
+.badge-blue { background: var(--blue-dim); color: #93c5fd; }
+.badge-green { background: var(--green-dim); color: #86efac; }
+.badge-yellow { background: var(--yellow-dim); color: #fde047; }
+.badge-orange { background: var(--orange-dim); color: #fdba74; }
+.badge-red { background: var(--red-dim); color: #fca5a5; }
+.badge-gray { background: rgba(113,113,122,0.15); color: #a1a1aa; }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 24px;
+  transition: all 0.2s;
+}
+.card:hover {
+  background: var(--card-hover);
+  border-color: #2a2a2e;
+}
+
+/* ===== PAGES TAB ===== */
+.pages-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.page-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.page-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+.page-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.page-meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+.btn-primary {
+  background: var(--purple);
+  color: #fff;
+}
+.btn-primary:hover { background: #6d28d9; }
+.btn-secondary {
+  background: rgba(255,255,255,0.06);
+  color: #d4d4d8;
+  border: 1px solid var(--card-border);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+.issues-list {
+  list-style: none;
+}
+.issues-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: #d4d4d8;
+  padding: 4px 0;
+  line-height: 1.5;
+}
+.issues-list li::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--red);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+.no-issues {
+  font-size: 14px;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ===== ADS TAB ===== */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.filter-tab {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.filter-tab:hover { color: #e4e4e7; background: rgba(255,255,255,0.08); }
+.filter-tab.active {
+  background: var(--purple-dim);
+  color: #c4b5fd;
+  border-color: rgba(124, 58, 237, 0.3);
+}
+.ads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ad-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.ad-number {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.ad-image {
+  margin: 12px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ad-image img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.ad-hook {
+  font-size: 21px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+.ad-angle {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.ad-destination {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.ad-destination a {
+  color: var(--purple);
+  text-decoration: none;
+}
+.ad-destination a:hover { text-decoration: underline; }
+.ad-expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--card-border);
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.ad-expand-toggle:hover { color: #e4e4e7; border-color: #333; }
+.ad-body-wrap {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+.ad-body-wrap.expanded {
+  max-height: 2000px;
+}
+.ad-body {
+  margin-top: 14px;
+  padding: 20px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #d4d4d8;
+  position: relative;
+}
+.copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--card-border);
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+/* ===== IMAGES TAB ===== */
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.image-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.image-card:hover {
+  border-color: #2a2a2e;
+  transform: translateY(-2px);
+}
+.image-thumb {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  background: #1a1a1d;
+}
+.image-info {
+  padding: 14px 16px;
+}
+.image-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e4e4e7;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.image-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ===== LIGHTBOX ===== */
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.lightbox.active { display: flex; }
+.lightbox img {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 12px;
+  object-fit: contain;
+}
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.2); }
+
+/* ===== TODO TAB ===== */
+.todo-summary {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.todo-summary strong { color: #fff; }
+.todo-group {
+  margin-bottom: 28px;
+}
+.todo-group-header {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--card-border);
+}
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+.todo-item:hover { background: var(--card-hover); }
+.todo-checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #3f3f46;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-top: 2px;
+}
+.todo-checkbox:hover { border-color: var(--purple); }
+.todo-checkbox.checked {
+  background: var(--purple);
+  border-color: var(--purple);
+}
+.todo-checkbox.checked::after {
+  content: '✓';
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.todo-item.done .todo-text { text-decoration: line-through; color: var(--muted); }
+.todo-content { flex: 1; min-width: 0; }
+.todo-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #e4e4e7;
+  margin-bottom: 4px;
+  transition: all 0.2s;
+}
+.todo-desc {
+  font-size: 13px;
+  color: #52525b;
+  line-height: 1.5;
+}
+.todo-badges {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 1024px) {
+  .pages-grid { grid-template-columns: 1fr; }
+  .images-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.open { display: block; }
+  .main { margin-left: 0; padding: 24px 16px; padding-top: 72px; }
+  .pages-grid { grid-template-columns: 1fr; }
+  .images-grid { grid-template-columns: 1fr; }
+  .section-title { font-size: 24px; }
+  .ad-hook { font-size: 18px; }
+}
+
+/* ===== PULSING ANIMATION ===== */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.badge-pulse { animation: pulse 2s ease-in-out infinite; }
+
+
+/* ===== AD REVIEW STACKED CARDS ===== */
+.ad-review-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.ad-review-image-section,
+.ad-review-copy-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.ad-review-copy-section { border-bottom: none; }
+.ad-review-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.ad-review-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.ad-review-hook {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.ad-review-body {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.review-img-placeholder {
+  width: 100%;
+  height: 160px;
+  background: #111;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* ===== REVIEW CARDS - PROPER STYLING ===== */
+.review-batch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.review-batch-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.review-img-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #111;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.review-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.review-card-body {
+  padding: 12px 16px 16px;
+}
+
+.review-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+/* ===== REVIEW BUTTONS ===== */
+.review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+}
+
+.review-btn:hover {
+  border-color: #444;
+}
+
+.review-btn.approve.active {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.review-btn.reject.active {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.review-actions {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+/* ===== REVIEW COMMENT TEXTAREA ===== */
+.review-comment {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 12px;
+  background: #111;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.review-comment::placeholder {
+  color: #555;
+}
+
+.review-comment:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+
+/* ===== BATCH NAV ===== */
+.review-batch-nav {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.review-nav-btn {
+  padding: 12px 24px;
+  background: var(--purple);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.review-nav-btn:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.review-all-done {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+
+.review-all-done .emoji {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* ===== PROGRESS BAR ===== */
+.review-progress-bar-wrap {
+  margin: 12px 0 20px;
+}
+
+.review-progress-text {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.review-progress-bar {
+  height: 4px;
+  background: #222;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.review-progress-fill {
+  height: 100%;
+  background: var(--purple);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .review-batch-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
   }
+  
+  .review-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 12px 8px;
+    font-size: 15px;
+    min-height: 48px;
+  }
+  
+  .review-comment {
+    font-size: 16px; /* prevents iOS zoom on focus */
+    min-height: 70px;
+  }
+  
+  .review-nav-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+  }
+  
+  .ad-review-hook {
+    font-size: 16px !important;
+  }
+  
+  .ad-review-body {
+    font-size: 14px !important;
+    max-height: 200px !important;
+  }
+  
+  .review-img-wrap {
+    aspect-ratio: 4/3;
+  }
+  
+  /* Sidebar mobile toggle */
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 100;
+    transition: transform 0.2s ease;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .main {
+    margin-left: 0 !important;
+    padding: 16px !important;
+  }
+  
+  .mobile-toggle {
+    display: flex !important;
+  }
+  
+  /* Ads grid mobile */
+  .ads-list .card {
+    margin-bottom: 12px;
+  }
+  
+  .filter-tabs, .filter-tab {
+    flex-wrap: wrap;
+  }
+  
+  .filter-tab {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  /* Pages grid mobile */
+  .pages-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Images grid mobile */
+  .images-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  /* Section headers */
+  .section-title {
+    font-size: 22px;
+  }
+}
+
+/* Prevent horizontal scroll */
+html, body {
+  overflow-x: hidden;
+}
+
+
+/* ===== MOBILE HEADER FIX ===== */
+@media (max-width: 768px) {
+  .section-header {
+    padding-top: 8px;
+  }
+  
+  .section-title {
+    padding-left: 0;
+  }
+  
+  .mobile-toggle {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 200;
+    width: 40px;
+    height: 40px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .main {
+    padding-top: 60px !important;
+  }
+  
+  /* Sidebar overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+  }
+  
+  .sidebar-overlay.active {
+    display: block;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-toggle, .sidebar-overlay {
+    display: none !important;
+  }
+}
+
 </style>
+
+<script>window.__DASHBOARD_DATA__ = {"updated_at": "2026-03-12T21:00:00Z", "overview": {"revenue": 0, "active_products": 1, "product_name": "LuxeBeam", "ads_running": 0, "pipeline_stage": "Mechanism Page Fix"}, "pages": [{"name": "Mechanism Advertorial", "slug": "mechanism", "store": "lmm", "store_name": "Little Miss Mineral", "live_url": "https://littlemissmineral.com/pages/why-your-serum-cant-reach-4mm-deep", "admin_url": "https://admin.shopify.com/store/orthocliner/themes/153357189275/editor?previewPath=/pages/why-your-serum-cant-reach-4mm-deep", "github_url": "https://github.com/samthestrategist/lmm-luxebeam-mechanism", "template": "page.luxebeam-mechanism", "sections": 7, "status": "fixing", "status_label": "Sam Fixing", "ecomwize_refs": 38, "issues": ["38 ecomwize URLs in Liquid", "hero-skin-depth.png duplicated 15x", "clinical-proof-nasa.png (fake NASA)", "6 male avatars"]}, {"name": "Story Advertorial", "slug": "story", "store": "tbv", "store_name": "The Beauty Verdict", "live_url": "https://thebeautyverdict.com/pages/i-replaced-my-400-skincare-routine-with-10-minutes-of-light", "admin_url": "https://admin.shopify.com/store/the-beauty-verdict/themes/158899273985/editor?previewPath=/pages/i-replaced-my-400-skincare-routine-with-10-minutes-of-light", "github_url": "https://github.com/samthestrategist/lmm-luxebeam-story", "template": "page.luxebeam-story", "sections": 12, "status": "broken", "status_label": "Ecomwize Contaminated", "ecomwize_refs": 71, "issues": ["71 ecomwize URLs", "95% demo content", "hero-sarah-mirror-v3.png duplicated 28x", "Only 2 unique images"]}, {"name": "Top 5 Ranking", "slug": "ranking", "store": "tbv", "store_name": "The Beauty Verdict", "live_url": "https://thebeautyverdict.com/pages/best-red-light-therapy-masks-2026", "admin_url": "https://admin.shopify.com/store/the-beauty-verdict/themes/158899273985/editor?previewPath=/pages/best-red-light-therapy-masks-2026", "github_url": "https://github.com/samthestrategist/lmm-luxebeam-ranking", "template": "page.luxebeam-ranking", "sections": 12, "status": "issues", "status_label": "Image Issues", "ecomwize_refs": 0, "issues": ["AI-hallucinated competitor masks", "Wrong LuxeBeam product design (beige/cream, should be white/red silicone)"]}, {"name": "Authority Advertorial", "slug": "authority", "store": "tbv", "store_name": "The Beauty Verdict", "live_url": "https://thebeautyverdict.com/pages/dermatologists-are-ditching-clinics-for-this-249-device", "admin_url": "https://admin.shopify.com/store/the-beauty-verdict/themes/158899273985/editor?previewPath=/pages/dermatologists-are-ditching-clinics-for-this-249-device", "github_url": "https://github.com/samthestrategist/lmm-luxebeam-authority", "template": "page.luxebeam-authority", "sections": 7, "status": "broken", "status_label": "Ecomwize Contaminated", "ecomwize_refs": 45, "issues": ["Ecomwize contamination", "hero-sarah-mirror-v3.png duplicated 13x", "Only 4 sections have unique images"]}, {"name": "PDP — Product Page", "slug": "pdp", "store": "lmm", "store_name": "Little Miss Mineral", "live_url": "https://littlemissmineral.com/products/luxebeam-deep-cell-led-face-mask", "admin_url": "https://admin.shopify.com/store/orthocliner/products/8922902233243", "github_url": "https://github.com/samthestrategist/lmm-luxebeam-pdp", "template": "product page", "sections": 0, "status": "live", "status_label": "Live", "ecomwize_refs": 0, "issues": []}], "ads": [{"id": 1, "campaign": "Mechanism", "campaign_num": 1, "brief": 1, "angle": "Serum Invalidation (A)", "hook_type": "problem_agitate", "hook": "Your $80 serum works on the top 0.1mm of skin. Your wrinkles start 4mm deep.", "emotional_arc": "frustration → curiosity", "destination": "Mechanism Advertorial", "visual_style": "Product lifestyle — warm cream palette, aspirational but achievable", "body": "That's not an opinion — it's physics. Every cream, retinol, and vitamin C serum you own works on the epidermis. It's 0.1mm thick. Your collagen-producing cells? They live 4mm below the surface, in the dermis. Nothing you put ON your skin can physically reach them.\n\n✨ 2,068+ studies on PubMed prove that specific wavelengths of red + near-infrared light penetrate 4mm to reach those cells\n✨ Dual-wavelength light (630-660nm + 830-850nm) stimulates your mitochondria to produce more collagen naturally\n✨ 10-minute sessions, hands-free, while you watch TV\n\n\"I've tried every serum and nothing makes a real difference.\" There's a reason — you've been treating the surface while the real aging happens underneath.\n\nDiscover why topicals can't reach the 4mm problem → Use SECRET25 for 25% off + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/protagonist-sarah-mirror.png"}, {"id": 2, "campaign": "Mechanism", "campaign_num": 1, "brief": 2, "angle": "Serum Invalidation (B)", "hook_type": "problem_agitate", "hook": "Why serums and retinol can never fix what's happening below the surface of your skin", "emotional_arc": "frustration → curiosity", "destination": "Mechanism Advertorial", "visual_style": "Product lifestyle — warm cream palette, aspirational but achievable", "body": "Your epidermis — the layer where every cream works — is 0.1mm thick. Your fibroblasts, the cells that actually produce collagen, live 1-4mm deep in the dermis. No topical can bridge that gap.\n\n✨ Red + near-infrared light at 630-660nm and 830-850nm reaches 4mm deep — directly to your collagen-producing cells\n✨ Stimulates cytochrome c oxidase in your mitochondria → more ATP → more collagen production\n✨ Backed by 2,068+ peer-reviewed studies\n\n\"I'm so tired of spending money on skincare that doesn't deliver.\"\n\nWhat if the answer isn't a better serum — but a different approach entirely? Learn about Deep-Cell Light Activation™ → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/protagonist-sarah-mirror.png"}, {"id": 3, "campaign": "Mechanism", "campaign_num": 1, "brief": 3, "angle": "4mm Science (A)", "hook_type": "curiosity_mechanism", "hook": "What happens when light reaches your collagen-producing cells 4mm below the surface", "emotional_arc": "curiosity → understanding", "destination": "Mechanism Advertorial", "visual_style": "Clinical authority — skin cross-section, wavelength diagram", "body": "Your fibroblasts — the cells responsible for making collagen and elastin — sit deep in the dermis. No cream can reach them. But clinically matched wavelengths of red and near-infrared light can.\n\n✨ 630-660nm red + 830-850nm NIR penetrates through the epidermis to the dermis\n✨ Light absorbed by mitochondria → cells produce more ATP (energy) → more collagen synthesis\n✨ It's called photobiomodulation — and there are 2,068+ studies proving it works\n\nThis isn't about better products on the surface. It's about reaching the cells that actually build your skin's structure — from 4mm deep.\n\nLearn the mechanism your dermatologist knows about → SECRET25 for 25% off + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/mechanism-diagram.png"}, {"id": 4, "campaign": "Mechanism", "campaign_num": 1, "brief": 4, "angle": "4mm Science (B)", "hook_type": "problem_agitate", "hook": "The 4mm problem: why nothing you put ON your skin can fix what's aging it from INSIDE", "emotional_arc": "frustration → understanding", "destination": "Mechanism Advertorial", "visual_style": "Clinical authority — skin cross-section, wavelength diagram", "body": "Your skin's outer layer (epidermis) is 0.1mm thick. That's where every serum, retinol, and cream works. But collagen breakdown happens in the dermis — 4mm deep — where your fibroblasts are running out of energy.\n\n✨ Fibroblasts need ATP (cellular energy) to produce collagen\n✨ After 30, your mitochondria slow down → less ATP → less collagen → fine lines deepen\n✨ Dual-wavelength light at 630-660nm + 830-850nm reaches those mitochondria and recharges them\n\nThis is called Deep-Cell Light Activation™. It works at a deeper level than just topicals — because it physically reaches deeper.\n\nSee why dermatologists call this the future of anti-aging → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/mechanism-diagram.png"}, {"id": 5, "campaign": "Mechanism", "campaign_num": 1, "brief": 5, "angle": "NASA Origin (A)", "hook_type": "authority", "hook": "NASA discovered this wavelength technology for wound healing. Now it's reversing wrinkles.", "emotional_arc": "authority → curiosity", "destination": "Mechanism Advertorial", "visual_style": "Clinical authority — skin cross-section, wavelength diagram", "body": "In the early 2000s, NASA scientists found that near-infrared light at 830nm accelerated wound healing in astronauts by 200%. The mechanism? Light penetrating tissue to stimulate mitochondrial energy production in cells.\n\n✨ Dermatologists adapted the same wavelengths (630-660nm + 830-850nm) for skin rejuvenation\n✨ 2,068+ peer-reviewed studies confirm: these wavelengths stimulate collagen production at the cellular level\n✨ Same technology used in $200/session clinic treatments — now available at home\n\n\"I need to see clinical studies before I spend that kind of money.\" Fair. There are over two thousand of them on PubMed.\n\nDiscover the NASA-validated wavelengths → SECRET25 for 25% off + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/clinical-comparison.png"}, {"id": 6, "campaign": "Mechanism", "campaign_num": 1, "brief": 6, "angle": "NASA Origin (B)", "hook_type": "authority", "hook": "From NASA labs to your bathroom: the light therapy wavelengths with 2,068 clinical studies", "emotional_arc": "authority → curiosity", "destination": "Mechanism Advertorial", "visual_style": "Clinical authority — skin cross-section, wavelength diagram", "body": "This isn't a skincare fad. Red and near-infrared light therapy started with NASA research on accelerating wound healing in space — and it's now one of the most studied non-invasive therapies in dermatology.\n\n✨ 630-660nm red light + 830-850nm near-infrared = the exact wavelengths with the strongest clinical evidence\n✨ Penetrates 4mm to reach fibroblasts — your collagen-producing cells\n✨ Same technology as $150-300/session clinic treatments\n\nThe science has been there for decades. What's new is that clinical-grade wavelength delivery is now available outside a clinic — for $249 instead of $4,800/year in sessions.\n\nRead the science behind the shift → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/clinical-comparison.png"}, {"id": 7, "campaign": "Mechanism", "campaign_num": 1, "brief": 7, "angle": "Mitochondria Energy (A)", "hook_type": "curiosity_mechanism", "hook": "Your skin cells have batteries. Red light recharges them. Here's the science.", "emotional_arc": "curiosity → understanding", "destination": "Mechanism Advertorial", "visual_style": "Clinical authority — skin cross-section, wavelength diagram", "body": "The \"batteries\" are your mitochondria — the energy-producing structures inside every cell. When they slow down (which happens naturally after 30), your fibroblasts produce less collagen. Fine lines deepen. Skin loses firmness.\n\n✨ Red light at 630-660nm + near-infrared at 830-850nm penetrates to the dermis (4mm deep)\n✨ These wavelengths recharge cytochrome c oxidase in your mitochondria → up to 200% more ATP production\n✨ More cellular energy = more collagen and elastin = firmer, smoother skin\n\nThis process is called Deep-Cell Light Activation™ — and it works at a deeper level than just topicals because it literally works deeper. 2,068+ PubMed studies back this up.\n\nSee how it works → SECRET25 for 25% off + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason1-collagen-science.png"}, {"id": 8, "campaign": "Mechanism", "campaign_num": 1, "brief": 8, "angle": "Mitochondria Energy (B)", "hook_type": "curiosity_mechanism", "hook": "Deep-Cell Light Activation: how dual-wavelength light energizes the cells that make collagen", "emotional_arc": "curiosity → understanding", "destination": "Mechanism Advertorial", "visual_style": "Clinical authority — skin cross-section, wavelength diagram", "body": "Your collagen-producing fibroblasts live 4mm below your skin's surface. They need energy (ATP) to do their job. After 30, that energy declines.\n\n✨ 630-660nm red + 830-850nm near-infrared light penetrates to the dermis — where your fibroblasts live\n✨ The light is absorbed by cytochrome c oxidase in your mitochondria\n✨ Result: more ATP production → more collagen synthesis → firmer, more radiant skin\n\nNo cream or serum can reach these cells. Light can. That's the fundamental shift that 2,068+ studies have documented.\n\n\"I want something that actually works at a deeper level than just topicals.\" This is it.\n\nLearn about Deep-Cell Light Activation™ → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason1-collagen-science.png"}, {"id": 9, "campaign": "Mechanism", "campaign_num": 1, "brief": 9, "angle": "Cost Per mm (A)", "hook_type": "comparison", "hook": "You've spent thousands on products that penetrate 0.1mm. This $249 device reaches 4mm.", "emotional_arc": "frustration → value realization", "destination": "Mechanism Advertorial", "visual_style": "Product lifestyle — warm cream palette, aspirational but achievable", "body": "That's 40x deeper. And it's not a metaphor — it's a measurement. Your serums work on the epidermis (0.1mm). Your collagen-producing cells sit in the dermis (1-4mm deep). One layer gets all the products. The other gets ignored.\n\n✨ Dual-wavelength LED light (630-660nm + 830-850nm) physically reaches 4mm into your skin\n✨ Stimulates the mitochondria of your fibroblasts → more collagen production\n✨ 2,068+ clinical studies. NASA-origin technology. 10 minutes/day.\n\n\"If it was under $250 I'd try it in a heartbeat.\" It's $249. With SECRET25, it's $186.75.\n\nPlus a 90-day money-back guarantee. See the science → link in bio.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/price-comparison-chart.png"}, {"id": 10, "campaign": "Mechanism", "campaign_num": 1, "brief": 10, "angle": "Cost Per mm (B)", "hook_type": "comparison", "hook": "$12,000 in serums over 5 years vs one $249 device that actually reaches your collagen cells", "emotional_arc": "frustration → value realization", "destination": "Mechanism Advertorial", "visual_style": "Product lifestyle — warm cream palette, aspirational but achievable", "body": "Let that sink in. The average woman spends $100-300/month on skincare — products that work on the top 0.1mm of skin. Meanwhile, the cells that produce collagen sit 4mm deep, untouched by everything you're buying.\n\n✨ Red + near-infrared light at clinical wavelengths (630-660nm + 830-850nm) penetrates 4mm to your fibroblasts\n✨ One device. $249. No monthly refills. No subscriptions.\n✨ \"The biggest game-changer for me\" — backed by 2,068+ studies\n\nThe math doesn't lie. $12,000 on the surface vs $249 to reach the source.\n\nUse SECRET25 for 25% off → $186.75 + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/price-comparison-chart.png"}, {"id": 11, "campaign": "Ranking", "campaign_num": 2, "brief": 11, "angle": "We Tested Them All (A)", "hook_type": "social_proof", "hook": "We tested 12 LED face masks for 90 days. Only 5 were worth buying.", "emotional_arc": "curiosity → trust", "destination": "Top 5 Ranking", "visual_style": "Editorial authority — clean layout, professional typography", "body": "$4,200 spent. 3 devices broke during testing. 2 had inaccurate wavelengths. Here's what we found:\n\n⭐ Editor's Choice (9.6/10): The $249 mask with clinical-grade wavelengths\n⚠️ $470 mask: Good wavelengths, but LEDs failed at month 3\n⚠️ $395 mask: FDA cleared, but gaps at chin mean inconsistent light delivery\n❌ $435 mask: Cracked after 11 days. We can't recommend it.\n\nThe most expensive mask scored lowest. The most affordable clinical-grade mask scored highest. Price doesn't equal quality in LED devices — wavelength accuracy does.\n\nRead the full 2026 ranking → Best Red Light Therapy Masks 2026\n\nUse SECRET25 for 25% off the Editor's Choice winner + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/five-masks-comparison-flatlay.png"}, {"id": 12, "campaign": "Ranking", "campaign_num": 2, "brief": 12, "angle": "We Tested Them All (B)", "hook_type": "social_proof", "hook": "12 LED masks tested. $3,000+ spent. Here are the only 5 that actually work.", "emotional_arc": "curiosity → trust", "destination": "Top 5 Ranking", "visual_style": "Editorial authority — clean layout, professional typography", "body": "We measured wavelength accuracy with a spectrophotometer. Ran each device for 90 daily sessions. Contacted every brand's customer service. And scored them on 5 criteria.\n\nThe results surprised us:\n\n✨ The $249 mask outscored the $470, $435, and $650 options\n✨ Only 2 out of 12 masks had zero failures in 90 days\n✨ The mask with the most LEDs (648) scored just 7.1/10\n✨ The mask with the longest guarantee (90 days) scored highest\n\n\"Quality is crucial — cheap ones are not worth it.\" True. But expensive doesn't mean quality either. Our full ranking separates clinical-grade from overpriced.\n\nSee the top 5 → Best Red Light Therapy Masks 2026. SECRET25 for 25% off #1.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/five-masks-comparison-flatlay.png"}, {"id": 13, "campaign": "Ranking", "campaign_num": 2, "brief": 13, "angle": "Price Comparison Shock (A)", "hook_type": "comparison", "hook": "The #1 rated LED mask of 2026 costs $249. The #2 costs $470. Same wavelengths.", "emotional_arc": "surprise → value realization", "destination": "Top 5 Ranking", "visual_style": "Comparison graphic — side-by-side, price table", "body": "Both use the clinically validated dual-wavelength range (630-660nm red + 830-850nm near-infrared). Both penetrate 4mm to reach collagen-producing fibroblasts. The difference?\n\n✨ #1 ($249): Zero failures in 90 days of testing. Wireless. USB-C. 90-day guarantee.\n✨ #2 ($470): LEDs flickered at month 3. Wired. Customer service ghosted our warranty inquiry.\n\nWhen we tested 12 LED masks over 90 days, the most affordable clinical-grade mask beat every premium option. You're not paying for better technology at $470 — you're paying for a brand name.\n\nRead the full ranking → SECRET25 for 25% off the #1 pick + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/price-comparison-chart.png"}, {"id": 14, "campaign": "Ranking", "campaign_num": 2, "brief": 14, "angle": "Price Comparison Shock (B)", "hook_type": "comparison", "hook": "Best red light mask 2026: it's not the $470 one. Or the $395 one. It's the $249 one.", "emotional_arc": "surprise → value realization", "destination": "Top 5 Ranking", "visual_style": "Comparison graphic — side-by-side, price table", "body": "We spent 90 days and $4,200 testing every major LED mask on the market. Here's the truth nobody in the industry wants you to know:\n\nThe clinical wavelengths that matter — 630-660nm red and 830-850nm near-infrared — are the same across price points. You're not getting \"better light\" at $470. You're getting a brand name and a shorter guarantee.\n\n⭐ #1 rated ($249): Dual wavelengths, wireless, 90-day guarantee, zero failures\n💰 #2 rated ($470): Same wavelengths, wired, 30-day guarantee, durability issues\n\n\"I almost bought the Omnilux but couldn't justify $400.\" Smart move.\n\nSee why → Full 2026 ranking. SECRET25 for 25% off the winner.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/price-comparison-chart.png"}, {"id": 15, "campaign": "Ranking", "campaign_num": 2, "brief": 15, "angle": "Competitor Weakness (A)", "hook_type": "comparison", "hook": "We found the $470 mask that breaks in 3 months and the $249 one that doesn't.", "emotional_arc": "concern → confidence", "destination": "Top 5 Ranking", "visual_style": "Comparison graphic — side-by-side, price table", "body": "After 90 days of testing 12 LED face masks, here's what we learned about durability:\n\n❌ $470 mask: LEDs started flickering at week 9. Customer service went silent on warranty claims.\n❌ $435 mask: Rigid plastic cracked at the temple after 11 days. Not kidding.\n❌ $395 mask: Battery issues reported after single uses. Returns require video proof + restocking fee.\n✅ $249 mask: Zero failures. Zero flickering. Zero degradation. 90 days. Daily use.\n\n\"I spent $400 and it broke in 3 months.\" — real Reddit review of a premium mask.\n\nRead which masks failed (and which didn't) → Best Red Light Therapy Masks 2026. SECRET25 for 25% off.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-treatments.png"}, {"id": 16, "campaign": "Ranking", "campaign_num": 2, "brief": 16, "angle": "Competitor Weakness (B)", "hook_type": "comparison", "hook": "Read this before spending $400+ on an LED face mask (the reviews they don't show you)", "emotional_arc": "concern → confidence", "destination": "Top 5 Ranking", "visual_style": "Comparison graphic — side-by-side, price table", "body": "\"I was basically ghosted by customer service\" — $470 mask owner\n\"I paid $435 for something that cracked after a week\" — actual Reddit review\n\"The mask got really warm and I wasn't sure if that was normal\" — $395 mask user\n\"It's heavy and leaves red marks on my forehead\" — $650 mask user\n\nWe tested 12 LED masks for 90 days and found that price doesn't predict quality. The reviews the brands don't show you tell a very different story than the marketing.\n\nOnly one clinical-grade mask had zero failures in our test. It costs $249. And it comes with a 90-day guarantee (most others: 30 days).\n\nSee the full ranking → SECRET25 for 25% off the winner.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-treatments.png"}, {"id": 17, "campaign": "Ranking", "campaign_num": 2, "brief": 17, "angle": "Best Under $300 (A)", "hook_type": "curiosity_mechanism", "hook": "The best red light therapy mask under $300 just changed the game for home skincare", "emotional_arc": "curiosity → excitement", "destination": "Top 5 Ranking", "visual_style": "Editorial authority — clean layout, professional typography", "body": "Here's what $249 gets you in 2026:\n\n✨ Dual-wavelength LED: 630-660nm red + 830-850nm near-infrared (same as $470 competitor)\n✨ Wireless, USB-C rechargeable\n✨ Soft silicone that contours to your face (no gaps, no sliding)\n✨ 90-day money-back guarantee\n✨ 9.6/10 in our independent 90-day test\n\n\"Looking for a good LED mask that won't break the bank\" — this is the one. Clinical-grade wavelengths. Premium build quality. Without the $400+ price tag.\n\nWe ranked the 5 best LED masks of 2026. Number one was also the most affordable.\n\nRead the full ranking → SECRET25 for 25% off.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-front.png"}, {"id": 18, "campaign": "Ranking", "campaign_num": 2, "brief": 18, "angle": "Best Under $300 (B)", "hook_type": "curiosity_mechanism", "hook": "Why beauty editors are calling this $249 mask 'the CurrentBody killer'", "emotional_arc": "curiosity → excitement", "destination": "Top 5 Ranking", "visual_style": "Editorial authority — clean layout, professional typography", "body": "Same clinical wavelengths (630-660nm + 830-850nm). Better durability in testing. Wireless instead of wired. 90-day guarantee instead of 30. And $221 less.\n\nIn our 90-day test of 12 LED face masks:\n\n⭐ LuxeBeam ($249): 9.6/10 — zero failures, best fit, best value\n📉 CurrentBody S2 ($470): 8.2/10 — LED flickering at month 3, CS unresponsive\n\nThe most popular premium LED mask just lost its crown to a device that costs nearly half as much. And it wasn't close.\n\n\"If it was under $250 I'd try it in a heartbeat.\" It's exactly $249.\n\nRead why → Best Red Light Therapy Masks 2026. SECRET25 for 25% off.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-front.png"}, {"id": 19, "campaign": "Ranking", "campaign_num": 2, "brief": 19, "angle": "vs Specific Competitor (A)", "hook_type": "comparison", "hook": "Omnilux ($395) vs LuxeBeam ($249): same wavelengths, different price, different durability", "emotional_arc": "comparison → confidence", "destination": "Top 5 Ranking", "visual_style": "Comparison graphic — side-by-side, price table", "body": "Both use 633nm/630-660nm red + 830nm/830-850nm near-infrared. Both claim clinical-grade photobiomodulation. Both use silicone design. So what's the difference?\n\nLuxeBeam ($249):\n✅ Wireless, USB-C\n✅ Zero failures in 90-day test\n✅ 90-day money-back guarantee\n✅ Sits flush on face — no gaps\n\nOmnilux ($395):\n❌ Wired\n❌ \"Bottom half sticks out, gaps at chin\"\n❌ \"How are you all wearing this thing comfortably?\"\n❌ 30-day return with restocking fee + video proof required\n\n$146 more for a mask that doesn't fit as well and has a shorter guarantee. That math doesn't work.\n\nFull comparison → SECRET25 for 25% off LuxeBeam.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-overwhelmed-vs-simple.png"}, {"id": 20, "campaign": "Ranking", "campaign_num": 2, "brief": 20, "angle": "vs Specific Competitor (B)", "hook_type": "comparison", "hook": "CurrentBody vs the $249 mask that dermatologists are switching to", "emotional_arc": "comparison → confidence", "destination": "Top 5 Ranking", "visual_style": "Comparison graphic — side-by-side, price table", "body": "The CurrentBody S2 has been the default premium LED mask for years. At $470, it should be the best. But our 90-day test tells a different story.\n\nCurrentBody S2 ($470):\n- LEDs flickered at week 9\n- Users report being \"ghosted by customer service\" on warranty claims\n- Wired (outlet required during use)\n- 30-day guarantee\n\nLuxeBeam ($249):\n- Zero failures in 90 daily sessions\n- Customer service responded in 4 hours\n- Wireless, USB-C rechargeable\n- 90-day guarantee\n\nSame clinical wavelengths. $221 less. Better durability. Better service. Better guarantee.\n\n\"Save me from wasting money — share your honest experiences.\" We just did.\n\nRead the full ranking → SECRET25 for 25% off.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-overwhelmed-vs-simple.png"}, {"id": 21, "campaign": "Authority", "campaign_num": 3, "brief": 21, "angle": "Dermatologists at Home (A)", "hook_type": "authority", "hook": "Why board-certified dermatologists are recommending at-home LED over in-office treatments", "emotional_arc": "authority → trust", "destination": "Authority Advertorial", "visual_style": "Editorial authority — clean layout, professional typography", "body": "The math changed everything:\n\nIn-office LED: $200/session × 2/month = $4,800/year\nAt-home LED: $249 once. Same wavelengths. Daily use.\n\nDermatologists aren't recommending at-home devices because they're cutting corners. They're recommending them because the science shows daily treatment with clinical wavelengths produces better cumulative results than twice-monthly clinic visits.\n\n✨ Same 630-660nm + 830-850nm wavelengths as professional panels\n✨ 2,068+ studies validating photobiomodulation for collagen production\n✨ 10 minutes on your couch > 1 hour at the clinic (including drive time)\n\n\"I want something I can do at home that mimics what they do at the derm.\" This is exactly that.\n\nRead why the shift is happening → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/expert-authority-dermatologist.png"}, {"id": 22, "campaign": "Authority", "campaign_num": 3, "brief": 22, "angle": "Dermatologists at Home (B)", "hook_type": "authority", "hook": "Dermatologists are ditching $200/session clinic LED for this $249 at-home device", "emotional_arc": "authority → trust", "destination": "Authority Advertorial", "visual_style": "Editorial authority — clean layout, professional typography", "body": "Here's what changed: the technology gap between professional LED panels and at-home masks has closed. The wavelengths are identical. The photobiomodulation mechanism is identical. What's different?\n\nAt-home: daily use from your couch. 10 minutes.\nClinic: bimonthly sessions. Commute + wait + $200.\n\n✨ Clinical-grade dual wavelengths (630-660nm red + 830-850nm NIR)\n✨ Backed by 2,068+ PubMed studies\n✨ Wireless, USB-C, soft silicone — 10-minute hands-free sessions\n✨ $249 (or $186.75 with SECRET25) vs $4,800/year for clinic sessions\n\nThe science favors consistency over intensity. Daily at-home beats twice-monthly clinic.\n\nRead the full story → SECRET25 for 25% off + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/expert-authority-dermatologist.png"}, {"id": 23, "campaign": "Authority", "campaign_num": 3, "brief": 23, "angle": "Same Technology, Different Markup (A)", "hook_type": "comparison", "hook": "In-office LED panels use the exact same wavelengths. The difference isn't the light — it's the markup.", "emotional_arc": "frustration → value realization", "destination": "Authority Advertorial", "visual_style": "Product lifestyle — warm cream palette, aspirational but achievable", "body": "Professional LED therapy uses 630-660nm red and 830nm near-infrared light. That's the clinical standard. It's what stimulates collagen production at a cellular level, 4mm deep in the dermis.\n\nAt-home clinical-grade masks use the exact same wavelengths. The difference?\n\n🏥 Clinic: $200/session. 2x/month. $4,800/year. Plus commute.\n🏠 Home: $249 once. Daily use. 10 minutes on your couch.\n\n✨ Same photobiomodulation mechanism\n✨ Same mitochondrial stimulation\n✨ Same collagen synthesis pathway\n✨ Different price tag. Very different.\n\n\"I want something I can do at home that mimics what they do at the derm.\"\n\nIt doesn't mimic it. It IS it. → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/home-vs-clinic-split.png"}, {"id": 24, "campaign": "Authority", "campaign_num": 3, "brief": 24, "angle": "Same Technology, Different Markup (B)", "hook_type": "mechanism", "hook": "Your dermatologist's $200 LED session uses 633nm light. This $249 mask uses 630-660nm. Same science.", "emotional_arc": "understanding → value realization", "destination": "Authority Advertorial", "visual_style": "Product lifestyle — warm cream palette, aspirational but achievable", "body": "The wavelengths that matter for collagen stimulation are well-established: 630-660nm (red) and 830-850nm (near-infrared). Professional LED panels operate in these exact ranges. So do clinical-grade at-home masks.\n\n✨ Same wavelengths → same photobiomodulation\n✨ Same depth of penetration (4mm to fibroblast mitochondria)\n✨ Same ATP stimulation → same collagen production pathway\n\nThe difference? A clinic session costs $200 and happens twice a month. An at-home mask costs $249 total and can be used daily. The research shows daily consistency produces superior results.\n\n\"I wish they were more transparent about what wavelengths actually do.\" So do we. That's why we published the data.\n\nSee the science → SECRET25 for 25% off + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/home-vs-clinic-split.png"}, {"id": 25, "campaign": "Authority", "campaign_num": 3, "brief": 25, "angle": "Clinical Study Count (A)", "hook_type": "authority", "hook": "2,068 studies on PubMed. Red + near-infrared light therapy isn't new. The $249 price tag is.", "emotional_arc": "authority → excitement", "destination": "Authority Advertorial", "visual_style": "Editorial authority — clean layout, professional typography", "body": "Photobiomodulation has been studied since NASA discovered its wound-healing properties in the early 2000s. The clinical evidence is overwhelming:\n\n✨ 2,068+ peer-reviewed studies on PubMed\n✨ NASA research: 830nm near-infrared accelerated healing by 200%\n✨ Validated wavelengths: 630-660nm (red) + 830-850nm (NIR)\n✨ Mechanism: light → mitochondria → ATP → collagen production\n\nThe science has been available to clinics for years. What's new is that clinical-grade wavelength delivery now fits on your face, charges via USB-C, and costs $249 instead of $4,800/year.\n\n\"I need to see clinical studies before I spend that kind of money.\" There are over two thousand of them.\n\nRead the research summary → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/fda-clinical-setting.png"}, {"id": 26, "campaign": "Authority", "campaign_num": 3, "brief": 26, "angle": "Clinical Study Count (B)", "hook_type": "authority", "hook": "The most clinically studied wavelengths in dermatology are now available for $249", "emotional_arc": "authority → excitement", "destination": "Authority Advertorial", "visual_style": "Editorial authority — clean layout, professional typography", "body": "630-660nm red light. 830-850nm near-infrared. These aren't marketing numbers — they're the most researched wavelength ranges in photobiomodulation science.\n\n✨ 2,068+ studies documenting efficacy for skin rejuvenation\n✨ NASA-origin technology adapted for dermatological use\n✨ Penetrates 4mm to stimulate collagen production at the cellular level\n\nFor years, accessing these wavelengths meant $150-300 per clinic session. Now a single device delivers the same clinically validated light therapy, daily, from your couch.\n\n\"Do these actually work or is it just marketing?\" Look up \"photobiomodulation\" on PubMed. We'll wait.\n\nTry clinical-grade wavelengths at home → SECRET25 for 25% off + 90-day money-back guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/fda-clinical-setting.png"}, {"id": 27, "campaign": "Authority", "campaign_num": 3, "brief": 27, "angle": "Aesthetician Approval (A)", "hook_type": "transformation", "hook": "'My aesthetician asked what I was doing differently.' The answer was 10 minutes of light.", "emotional_arc": "skepticism → delight", "destination": "Authority Advertorial", "visual_style": "UGC testimonial — real person, natural lighting", "body": "After 8 weeks of using clinical-grade red + near-infrared light therapy at home, my skin changed enough that a professional noticed.\n\nNot \"oh your skin looks nice\" nice. She leaned in, studied my face, and said: \"Whatever you changed, keep doing it. Your skin looks years younger.\"\n\n✨ Dual-wavelength light (630-660nm + 830-850nm) reaches your collagen-producing cells 4mm deep\n✨ 10 minutes while watching TV, every evening\n✨ Better results than my $200/session clinic treatments\n✨ $249 (one time) vs $4,800/year for clinic visits\n\n\"People keep asking what I'm doing differently.\" If you want that kind of skin — the kind that looks like she just walked out of a facial — this is how.\n\nTry it risk-free → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/transformation-confidence-portrait.png"}, {"id": 28, "campaign": "Authority", "campaign_num": 3, "brief": 28, "angle": "Aesthetician Approval (B)", "hook_type": "transformation", "hook": "When your facialist can't tell if you got professional treatments or used a $249 mask at home", "emotional_arc": "skepticism → delight", "destination": "Authority Advertorial", "visual_style": "UGC testimonial — real person, natural lighting", "body": "That's what happens when at-home devices use the exact same wavelengths as professional LED panels. The results become indistinguishable.\n\n✨ 630-660nm red + 830-850nm near-infrared: the clinical standard for photobiomodulation\n✨ Penetrates 4mm to your collagen-producing cells — same depth as professional panels\n✨ 10 minutes daily at home > 2 sessions/month at the clinic\n✨ $249 once vs $150-300 per professional session\n\n\"My skin looks like I just walked out of a facial.\" Every. Single. Morning. Not just for 48 hours after your appointment.\n\nThe science isn't different. The convenience is. The price is. The consistency is.\n\nDiscover why → SECRET25 for 25% off + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/transformation-confidence-portrait.png"}, {"id": 29, "campaign": "Authority", "campaign_num": 3, "brief": 29, "angle": "Clinic Math (A)", "hook_type": "comparison", "hook": "$200/session × 2/month × 12 months = $4,800. Or: $249 once. Same wavelengths. Your bathroom.", "emotional_arc": "frustration → value realization", "destination": "Authority Advertorial", "visual_style": "Editorial authority — clean layout, professional typography", "body": "The math that's making women rethink their entire anti-aging approach:\n\n🏥 In-office LED therapy:\n- $200/session, recommended 2x/month\n- $4,800/year. $24,000 over 5 years.\n- Plus commute, scheduling, waiting rooms.\n\n🏠 At-home clinical-grade LED:\n- $249 once (or $186.75 with SECRET25)\n- Same 630-660nm + 830-850nm wavelengths\n- Daily use. 10 minutes on your couch.\n- $0/year after purchase.\n\nThe difference in technology? Zero. The difference in price? $4,551/year.\n\n\"I want something I can do at home that mimics what they do at the derm.\" It doesn't mimic it. It's the same science.\n\nDo the math yourself → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-treatments.png"}, {"id": 30, "campaign": "Authority", "campaign_num": 3, "brief": 30, "angle": "Clinic Math (B)", "hook_type": "comparison", "hook": "The math that's making dermatologists tell patients to buy their own LED masks", "emotional_arc": "authority → value realization", "destination": "Authority Advertorial", "visual_style": "Editorial authority — clean layout, professional typography", "body": "When the same wavelength technology that costs $200/session in a clinic is available for $249 total at home — the recommendation changes.\n\nDermatologists aren't losing faith in LED therapy. They're gaining faith in at-home devices. Because:\n\n✨ Same 630-660nm + 830-850nm wavelengths as professional panels\n✨ Daily consistency at home > bimonthly intensity at clinic\n✨ $249 once vs $4,800/year — the economic argument is settled\n✨ 2,068+ studies validating the same mechanism regardless of delivery setting\n\n\"I was spending $200 per session. My derm told me to look into at-home devices because the technology had caught up.\"\n\nThe technology caught up. The prices didn't. That's your advantage.\n\nRead why clinicians are shifting → SECRET25 for 25% off + 90-day guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-treatments.png"}, {"id": 31, "campaign": "Retargeting", "campaign_num": 4, "brief": 31, "angle": "Price Reminder (A)", "hook_type": "direct_offer", "hook": "Still thinking about the LuxeBeam? Use SECRET25 for 25% off → $186.75 (cheaper than ONE clinic session)", "emotional_arc": "consideration → urgency", "destination": "PDP — Product Page", "visual_style": "Comparison graphic — side-by-side, price table", "body": "You looked at the LuxeBeam™ for a reason. The clinical wavelengths. The price. The 90-day guarantee. Here's your reminder:\n\n✨ Dual-wavelength LED (630-660nm + 830-850nm) — same as $470 competitor\n✨ Wireless, USB-C, soft silicone — 10-minute hands-free sessions\n✨ 90-day money-back guarantee — longest in the category\n✨ $186.75 with SECRET25 — less than a single professional LED session\n\nThe longer you wait, the longer you're spending $100-300/month on topicals that work on 0.1mm of skin. LuxeBeam reaches 4mm.\n\nUse SECRET25 now → $186.75 + free shipping + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-front.png"}, {"id": 32, "campaign": "Retargeting", "campaign_num": 4, "brief": 32, "angle": "Price Reminder (B)", "hook_type": "direct_offer", "hook": "The LuxeBeam mask you looked at is 25% off today. Same clinical wavelengths. Half the price of competitors.", "emotional_arc": "consideration → urgency", "destination": "PDP — Product Page", "visual_style": "Comparison graphic — side-by-side, price table", "body": "Quick reminder of what you're getting:\n\n✨ 630-660nm red + 830-850nm NIR — clinically validated dual wavelengths\n✨ Wireless, USB-C — 10 minutes on your couch\n✨ 9.6/10 Editor's Choice rating\n✨ 90-day money-back guarantee\n\n$249 → $186.75 with SECRET25\n\nCurrentBody: $470. Omnilux: $395. Therabody: $550. LuxeBeam: $186.75.\n\nSame science. Fraction of the price. And a guarantee that's 3x longer than any competitor.\n\nClaim your 25% off → SECRET25 at checkout.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-front.png"}, {"id": 33, "campaign": "Retargeting", "campaign_num": 4, "brief": 33, "angle": "Social Proof Push (A)", "hook_type": "social_proof", "hook": "Join thousands of women who replaced their $400 skincare routine with 10 minutes of light", "emotional_arc": "belonging → confidence", "destination": "PDP — Product Page", "visual_style": "UGC testimonial — real person, natural lighting", "body": "Here's what they're saying:\n\n⭐ \"My skin looks full of life. Like glowy plump even, the kind of skin that looks like she just walked out of a facial.\"\n⭐ \"People keep asking what I'm doing differently.\"\n⭐ \"The biggest game-changer for me.\"\n⭐ \"It works at a deeper level than just topicals.\"\n⭐ \"I do it while watching TV — easiest routine ever.\"\n\nThe LuxeBeam™ uses Deep-Cell Light Activation™ to reach your collagen-producing cells 4mm below the surface — where no serum can go.\n\n$249 → $186.75 with SECRET25\n90-day money-back guarantee. Risk-free.\n\nUse SECRET25 at checkout → Try LuxeBeam risk-free.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/ugc-selfie-testimonial.png"}, {"id": 34, "campaign": "Retargeting", "campaign_num": 4, "brief": 34, "angle": "Social Proof Push (B)", "hook_type": "social_proof", "hook": "'Game changer for my skin' — See what LuxeBeam users are saying ⭐⭐⭐⭐⭐", "emotional_arc": "belonging → confidence", "destination": "PDP — Product Page", "visual_style": "UGC testimonial — real person, natural lighting", "body": "\"I noticed a HUGE difference in my skin. My acne scars are diminished. My laugh lines are less.\" — Rachel W.\n\n\"My aesthetician noticed the difference before I even told her what I was using.\" — Jennifer K.\n\n\"I was the biggest skeptic. 6 weeks later, I had to eat my words.\" — Christine P.\n\n\"10 minutes is easy — I do it while my kids are doing homework.\" — Diana R.\n\nThe LuxeBeam™ Red Light Therapy Mask — dual-wavelength Deep-Cell Light Activation™ that reaches 4mm to your collagen-producing cells.\n\n$249 → $186.75 with SECRET25\n90-day money-back guarantee.\n\nYou already know the science. Now try it risk-free → SECRET25 at checkout.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/ugc-selfie-testimonial.png"}, {"id": 35, "campaign": "Retargeting", "campaign_num": 4, "brief": 35, "angle": "Guarantee Reminder (A)", "hook_type": "direct_offer", "hook": "90-day money-back guarantee. If LuxeBeam doesn't transform your skin, return it. No questions.", "emotional_arc": "hesitation → confidence", "destination": "PDP — Product Page", "visual_style": "Product lifestyle — woman in robe, evening routine, warm lighting", "body": "You've been thinking about it. Here's what's stopping you: \"What if it doesn't work for my skin?\"\n\nFair question. Here's the answer: try it for 90 full days. That's 12 weeks — enough time to see meaningful results (most users notice changes at 4-8 weeks). If you don't see firmer, more radiant skin, send it back. Full refund. No questions.\n\nMost competitors? 30 days. Barely enough to assess whether red light therapy is working.\n\n✨ Clinical-grade dual wavelengths (630-660nm + 830-850nm)\n✨ 10-minute sessions\n✨ $186.75 with SECRET25\n\nThe guarantee exists because the science works. Try it and see.\n\nSECRET25 at checkout → 25% off + 90-day risk-free guarantee.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-lifestyle-couch.png"}, {"id": 36, "campaign": "Retargeting", "campaign_num": 4, "brief": 36, "angle": "Guarantee Reminder (B)", "hook_type": "direct_offer", "hook": "Still on the fence? Try LuxeBeam risk-free for 90 days. Love it or send it back.", "emotional_arc": "hesitation → confidence", "destination": "PDP — Product Page", "visual_style": "Product lifestyle — woman in robe, evening routine, warm lighting", "body": "\"I need a good return policy — what if it doesn't work for my skin?\"\n\nWe get it. You've been burned by expensive skincare before. That's why LuxeBeam comes with a 90-day money-back guarantee — 3x longer than any competitor.\n\nUse it daily. See if your skin changes. If it doesn't, return it for a full refund. No video proof. No restocking fees. No hassle. (Yes, those are real complaints about other brands.)\n\n✨ $249 → $186.75 with SECRET25\n✨ 90 days to decide — not 30\n✨ Full refund, no questions asked\n\nWhat's the risk? There isn't one.\n\nSECRET25 at checkout → Try LuxeBeam for 90 days, risk-free.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-lifestyle-couch.png"}, {"id": 37, "campaign": "Retargeting", "campaign_num": 4, "brief": 37, "angle": "Results Timeline (A)", "hook_type": "transformation", "hook": "Week 1: Your skin feels different. Week 4: Others notice. Week 8: You wonder why you waited.", "emotional_arc": "anticipation → delight", "destination": "PDP — Product Page", "visual_style": "UGC testimonial — real person, natural lighting", "body": "Here's the LuxeBeam transformation timeline based on user experiences:\n\nWeek 1-2: Skin feels softer, slightly warmer post-session. Subtle luminosity in the morning. \"My skin looks way more alive.\"\n\nWeek 3-4: Fine lines begin softening. Skin tone evens out. \"I noticed a real difference in my skin — more even tone and fewer fine lines.\"\n\nWeek 6-8: Visible transformation. Collagen stimulation is cumulative. \"People keep asking what I'm doing differently.\" \"My skin looks full of life. Like glowy plump even.\"\n\n10 minutes/day. Dual-wavelength Deep-Cell Light Activation™. $186.75 with SECRET25.\n\n90-day guarantee means you'll see week 8 results before you commit.\n\nStart your transformation → SECRET25 at checkout.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-2weeks.png"}, {"id": 38, "campaign": "Retargeting", "campaign_num": 4, "brief": 38, "angle": "Results Timeline (B)", "hook_type": "transformation", "hook": "What happens when you use LuxeBeam for 10 minutes a day: a week-by-week skin transformation", "emotional_arc": "anticipation → delight", "destination": "PDP — Product Page", "visual_style": "UGC testimonial — real person, natural lighting", "body": "Your collagen-producing fibroblasts sit 4mm below your skin's surface. When dual-wavelength light reaches them daily, the results compound:\n\n✨ Week 1: Cells begin producing more ATP. Skin feels softer.\n✨ Week 2: \"My skin looks way more alive\" — increased cellular energy shows as luminosity\n✨ Week 4: \"I noticed a real difference — more even tone and fewer fine lines\"\n✨ Week 8: \"My skin looks like I just walked out of a facial\" — collagen production has ramped up\n\nThis isn't overnight magic. It's cellular biology. Deep-Cell Light Activation™ gives your fibroblasts the energy they need to produce collagen naturally — and it builds over time.\n\n$249 → $186.75 with SECRET25. 90-day guarantee covers you through week 12.\n\nSECRET25 at checkout → Start your timeline.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-2weeks.png"}, {"id": 39, "campaign": "Retargeting", "campaign_num": 4, "brief": 39, "angle": "Bundle Upsell (A)", "hook_type": "direct_offer", "hook": "Complete Ritual bundle: LuxeBeam mask + Collagen Serum + Case — $329 → $246.75 with SECRET25", "emotional_arc": "excitement → urgency", "destination": "PDP — Product Page", "visual_style": "Product lifestyle — woman in robe, evening routine, warm lighting", "body": "Ready for the full at-home clinic experience?\n\nThe Complete Ritual includes:\n✨ LuxeBeam™ Red Light Therapy Mask — dual-wavelength Deep-Cell Light Activation™\n✨ LMM Collagen Serum — apply before your session to boost absorption\n✨ Premium Carrying Case — protect your investment\n\n$329 → $246.75 with SECRET25\n\nThat's less than the mask alone costs from most competitors. And you're getting the complete system.\n\nOr grab the Essential (mask only): $249 → $186.75 with SECRET25\n\nBoth include: 90-day money-back guarantee + free shipping.\n\nSECRET25 at checkout → Choose your bundle.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-on-stand.png"}, {"id": 40, "campaign": "Retargeting", "campaign_num": 4, "brief": 40, "angle": "Bundle Upsell (B)", "hook_type": "direct_offer", "hook": "The complete at-home clinic: LuxeBeam + LMM Collagen Serum. 25% off the bundle today.", "emotional_arc": "excitement → urgency", "destination": "PDP — Product Page", "visual_style": "Product lifestyle — woman in robe, evening routine, warm lighting", "body": "You already know the LuxeBeam™ delivers clinical-grade wavelengths for $249. Now pair it with the LMM Collagen Serum for the complete Deep-Cell Light Activation™ ritual:\n\nStep 1: Apply LMM Collagen Serum (preps skin for optimal light absorption)\nStep 2: LuxeBeam mask on. 10 minutes. Hands-free.\nStep 3: Done. Your fibroblasts are energized. Collagen production activated.\n\n🎁 Complete Ritual Bundle: $329 → $246.75 with SECRET25\n📦 Essential (mask only): $249 → $186.75 with SECRET25\n🏆 Ultimate Glow (mask + serum + mist + eye attachment + case): $449 → $336.75 with SECRET25\n\nAll bundles include 90-day money-back guarantee.\n\nSECRET25 at checkout → Build your ritual.", "image_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-on-stand.png"}], "images": [{"name": "before-after-cheek-45", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/before-after-cheek-45.png", "suggested_use": "PDP before/after section"}, {"name": "before-after-forehead-52", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/before-after-forehead-52.png", "suggested_use": "PDP before/after section"}, {"name": "hero-lifestyle-couch", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-lifestyle-couch.png", "suggested_use": "PDP hero section"}, {"name": "hero-product-front", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-front.png", "suggested_use": "PDP hero / product gallery"}, {"name": "hero-product-on-stand", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-on-stand.png", "suggested_use": "PDP hero / product gallery"}, {"name": "in-use-bathroom-vanity", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/in-use-bathroom-vanity.png", "suggested_use": "PDP lifestyle section"}, {"name": "mechanism-diagram", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/mechanism-diagram.png", "suggested_use": "PDP science/mechanism section"}, {"name": "price-comparison-chart", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/price-comparison-chart.png", "suggested_use": "PDP comparison section"}, {"name": "product-angle-back", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/product-angle-back.png", "suggested_use": "PDP product gallery"}, {"name": "product-angle-box", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/product-angle-box.png", "suggested_use": "PDP product gallery"}, {"name": "product-angle-side", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/product-angle-side.png", "suggested_use": "PDP product gallery"}, {"name": "product-detail-charging", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/product-detail-charging.png", "suggested_use": "PDP features section"}, {"name": "ugc-selfie-testimonial", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/ugc-selfie-testimonial.png", "suggested_use": "PDP testimonials section"}, {"name": "competitor-mask-1", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/competitor-mask-1.png", "suggested_use": "Ranking page competitor cards"}, {"name": "competitor-mask-2", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/competitor-mask-2.png", "suggested_use": "Ranking page competitor cards"}, {"name": "competitor-mask-3", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/competitor-mask-3.png", "suggested_use": "Ranking page competitor cards"}, {"name": "competitor-mask-4", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/competitor-mask-4.png", "suggested_use": "Ranking page competitor cards"}, {"name": "five-masks-comparison-flatlay", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/five-masks-comparison-flatlay.png", "suggested_use": "Ranking page hero"}, {"name": "lifestyle-woman-comparing", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/lifestyle-woman-comparing.png", "suggested_use": "Ranking page intro section"}, {"name": "luxebeam-winner-badge", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/luxebeam-winner-badge.png", "suggested_use": "Ranking page #1 pick"}, {"name": "results-skin-closeup", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-skin-closeup.png", "suggested_use": "Ranking page results section"}, {"name": "trust-badges-scene", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/trust-badges-scene.png", "suggested_use": "Ranking page trust section"}, {"name": "easy-routine-evening-bed", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/easy-routine-evening-bed.png", "suggested_use": "Story page — convenience reason"}, {"name": "lifestyle-morning-routine", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/lifestyle-morning-routine.png", "suggested_use": "Story page — morning routine"}, {"name": "problem-frustrated-mirror", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/problem-frustrated-mirror.png", "suggested_use": "Story page — problem section"}, {"name": "reason1-collagen-science", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason1-collagen-science.png", "suggested_use": "Story page — reason 1"}, {"name": "reason2-wrinkle-reduction", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason2-wrinkle-reduction.png", "suggested_use": "Story page — reason 2"}, {"name": "reason3-acne-healing", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason3-acne-healing.png", "suggested_use": "Story page — reason 3"}, {"name": "reason4-circulation", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason4-circulation.png", "suggested_use": "Story page — reason 4"}, {"name": "reason5-painless", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason5-painless.png", "suggested_use": "Story page — reason 5"}, {"name": "reason6-home-convenience", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason6-home-convenience.png", "suggested_use": "Story page — reason 6"}, {"name": "reason7-cost-savings", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason7-cost-savings.png", "suggested_use": "Story page — reason 7"}, {"name": "testimonial-jennifer-44", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/testimonial-jennifer-44.png", "suggested_use": "Story page — testimonial"}, {"name": "testimonial-maria-52", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/testimonial-maria-52.png", "suggested_use": "Story page — testimonial"}, {"name": "testimonial-sarah-47", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/testimonial-sarah-47.png", "suggested_use": "Story page — testimonial"}, {"name": "comparison-overwhelmed-vs-simple", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-overwhelmed-vs-simple.png", "suggested_use": "Ad creative — comparison hooks"}, {"name": "first-use-excitement", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/first-use-excitement.png", "suggested_use": "Ad creative — transformation hooks"}, {"name": "first-use-wearing", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/first-use-wearing.png", "suggested_use": "Ad creative — product lifestyle"}, {"name": "protagonist-discovery", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/protagonist-discovery.png", "suggested_use": "Ad creative — story hooks"}, {"name": "protagonist-sarah-mirror", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/protagonist-sarah-mirror.png", "suggested_use": "Ad creative — problem_agitate hooks"}, {"name": "results-2weeks", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-2weeks.png", "suggested_use": "Ad creative — results timeline"}, {"name": "results-6weeks", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-6weeks.png", "suggested_use": "Ad creative — results timeline"}, {"name": "transformation-confidence-portrait", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/transformation-confidence-portrait.png", "suggested_use": "Ad creative — transformation hooks"}, {"name": "clinical-comparison", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/clinical-comparison.png", "suggested_use": "Authority page — clinical comparison"}, {"name": "comparison-treatments", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-treatments.png", "suggested_use": "Authority page — treatment comparison"}, {"name": "demographic-women", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/demographic-women.png", "suggested_use": "Authority page — demographic section"}, {"name": "expert-authority-dermatologist", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/expert-authority-dermatologist.png", "suggested_use": "Authority page — expert quotes"}, {"name": "fda-clinical-setting", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/fda-clinical-setting.png", "suggested_use": "Authority page — clinical evidence"}, {"name": "home-vs-clinic-split", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/home-vs-clinic-split.png", "suggested_use": "Authority page — home vs clinic"}, {"name": "informed-reader-mask-subtle", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/informed-reader-mask-subtle.png", "suggested_use": "Authority page — reader section"}, {"name": "journalist-research-desk", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/journalist-research-desk.png", "suggested_use": "Authority page — journalist perspective"}, {"name": "patient-treatment", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/patient-treatment.png", "suggested_use": "Authority page — treatment section"}, {"name": "results-timeline", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-timeline.png", "suggested_use": "Authority page — results timeline"}], "pipeline": {"stages": [{"name": "Research", "status": "complete", "output": "Avatar dossier, 50+ Reddit phrases"}, {"name": "Ad Intel", "status": "complete", "output": "767 ads analyzed, 40 creative briefs"}, {"name": "Copy", "status": "complete", "output": "4 pages structured copy, 40 ad copies"}, {"name": "Images", "status": "complete", "output": "53 CDN images across 5 categories"}, {"name": "Build", "status": "broken", "output": "Template-swap failed — empty schemas"}, {"name": "Deploy", "status": "broken", "output": "Pages deployed but contaminated"}, {"name": "QA", "status": "not_started", "output": "Never ran — no screenshots taken"}], "clean_build": [{"id": "CB-1", "name": "blueprint_extract.py", "status": "complete"}, {"id": "CB-2", "name": "section_build.py", "status": "paused", "note": "Waiting for diff analysis"}, {"id": "CB-3", "name": "template_assemble.py", "status": "not_started"}, {"id": "CB-4", "name": "LuxeBeam clean rebuild", "status": "not_started", "note": "Needs CB-1/2/3"}, {"id": "CB-5", "name": "page_state_gen.py", "status": "built_untested"}, {"id": "CB-6", "name": "repair.py", "status": "built_untested"}, {"id": "CB-7", "name": "diff_capture.py", "status": "built_untested"}, {"id": "CB-8", "name": "Agent feedback loop", "status": "not_started"}]}, "todo": [{"id": 1, "priority": "P0", "group": "Blockers", "title": "Mechanism page: 38 ecomwize URLs in Liquid", "description": "38 references to ecomwize demo URLs in Liquid section files. Sections restored from TBV but hardcoded URLs remain in the Liquid source.", "context": "snapshots/luxebeam/snapshot-20260312-1432/lmm/sections/ecomwize-*.liquid — grep for 'ecomwize.com'", "done": false}, {"id": 2, "priority": "P0", "group": "Blockers", "title": "Story page: 71 ecomwize URLs, 95% demo content", "description": "Worst contamination — nearly all content is demo placeholder from ecomwize theme", "context": "TBV store, template page.luxebeam-story, 12 sections. Sam said don't build yet.", "done": false}, {"id": 3, "priority": "P0", "group": "Blockers", "title": "Authority page: ecomwize contamination", "description": "45 ecomwize references, hero-sarah-mirror-v3.png duplicated 13x", "context": "TBV store, template page.luxebeam-authority, 7 sections. Sam said don't build yet.", "done": false}, {"id": 4, "priority": "P1", "group": "Active", "title": "Sam manually editing mechanism page", "description": "Sam is fixing copy, images, sections in Shopify customizer. When done, run diff_capture.", "context": "Admin: https://admin.shopify.com/store/orthocliner/themes/153357189275/editor | diff_capture.py at ~/.openclaw/tools/clean-build/diff_capture.py", "done": false}, {"id": 5, "priority": "P1", "group": "Bugs", "title": "Duplicate images across all pages", "description": "hero-skin-depth.png duped 15x on mechanism, hero-sarah-mirror-v3.png duped 28x on story, 13x on authority", "context": "pipeline/active/luxebeam/images/cdn_urls_all.json — 53 images total but heavy reuse", "done": false}, {"id": 6, "priority": "P1", "group": "Bugs", "title": "AI-generated images not based on ad research references", "description": "Ad images don't replicate from reference images. Need to feed reference image + supplier product photo into prompts.", "context": "pipeline/active/luxebeam/ad-intel/image_reference_library.json + creative_briefs/brief-*.md", "done": false}, {"id": 7, "priority": "P1", "group": "Bugs", "title": "Ranking page: AI-hallucinated competitor masks", "description": "Competitor mask images are AI-generated, not real product photos. Wrong LuxeBeam design (beige/cream vs white/red silicone).", "context": "TBV store, page.luxebeam-ranking. CDN images: competitor-mask-1 through 4.", "done": false}, {"id": 8, "priority": "P1", "group": "Bugs", "title": "clinical-proof-nasa.png (fake NASA image)", "description": "AI-generated NASA clinical image — needs real or properly attributed image", "context": "CDN: cdn.shopify.com/s/files/1/0462/8591/4267/files/clinical-proof-nasa.png", "done": false}, {"id": 9, "priority": "P2", "group": "Pipeline", "title": "CB-2: section_build.py", "description": "Build section_build.py — Blueprint + STRUCTURED_COPY tags + CDN URLs → clean .liquid with schema-first. BLOCKED until diff analysis.", "context": "~/.openclaw/tools/clean-build/ | Depends on: diff analysis of Sam's mechanism page edits", "done": false}, {"id": 10, "priority": "P2", "group": "Pipeline", "title": "CB-3: template_assemble.py", "description": "All sections → page template .json with copy in schema defaults. Depends on CB-2.", "context": "~/.openclaw/tools/clean-build/", "done": false}, {"id": 11, "priority": "P2", "group": "Pipeline", "title": "CRO knowledge DB: seed with data", "description": "Database created but empty (0 rows). 21 seed sources loaded but never extracted.", "context": "~/.openclaw/workspace-orchestrator/cro-knowledge/cro_knowledge.db", "done": false}, {"id": 100, "priority": "P0", "group": "Done", "title": "Mechanism page blank — restored from TBV", "description": "7 ecomwize sections were truncated on LMM (half size). Copied full versions from TBV. Page now renders.", "context": "ops.jsonl logged. Git: ~/.openclaw/themes/orthocliner/ commit cba84ac", "done": true, "done_at": "2026-03-12T16:12:00Z"}, {"id": 101, "priority": "P1", "group": "Done", "title": "OpenClaw dual install conflict", "description": "Had two installs at /usr/local and ~/.npm-global. Removed /usr/local version.", "context": "npm uninstall -g openclaw --prefix /usr/local", "done": true, "done_at": "2026-03-12T14:00:00Z"}, {"id": 102, "priority": "P2", "group": "Done", "title": "Template-swap converter deprecated", "description": "Replaced by clean-build toolchain (CB-1 through CB-8). Template-swap caused the truncated sections.", "context": "converters/template-swap/ — do not use", "done": true, "done_at": "2026-03-12T10:00:00Z"}, {"id": 103, "priority": "P0", "group": "Done", "title": "CB-1: blueprint_extract.py", "description": "Extracts EcomWize section → blueprint JSON (CSS + layout only, zero content).", "context": "~/.openclaw/tools/clean-build/blueprint_extract.py", "done": true, "done_at": "2026-03-11T23:00:00Z"}, {"id": 104, "priority": "P1", "group": "Done", "title": "Dashboard fixed and review tabs added", "description": "Fixed JS TDZ error. Added Ad Review (image+copy, 3 per page, comments) and PDP Review tabs.", "context": "dashboard/index.html", "done": true, "done_at": "2026-03-12T16:45:00Z"}, {"id": 105, "priority": "P0", "group": "Done", "title": "OPERATING_MODEL.md + SYSTEMS.md created", "description": "6-layer process architecture + full system inventory. Foundation for all future work.", "context": "~/.openclaw/context/OPERATING_MODEL.md + SYSTEMS.md", "done": true, "done_at": "2026-03-12T15:30:00Z"}, {"id": 106, "priority": "P1", "group": "Done", "title": "Snapshot baseline captured", "description": "154 sections (89 LMM + 65 TBV), both stores, pre-edit baseline.", "context": "snapshots/luxebeam/snapshot-20260312-1432/", "done": true, "done_at": "2026-03-12T14:32:00Z"}], "image_review": [{"id": "pdp-before-after-cheek-45", "name": "before-after-cheek-45", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/before-after-cheek-45.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-before-after-forehead-52", "name": "before-after-forehead-52", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/before-after-forehead-52.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-hero-lifestyle-couch", "name": "hero-lifestyle-couch", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-lifestyle-couch.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-hero-product-front", "name": "hero-product-front", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-front.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-hero-product-on-stand", "name": "hero-product-on-stand", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/hero-product-on-stand.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-in-use-bathroom-vanity", "name": "in-use-bathroom-vanity", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/in-use-bathroom-vanity.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-mechanism-diagram", "name": "mechanism-diagram", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/mechanism-diagram.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-price-comparison-chart", "name": "price-comparison-chart", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/price-comparison-chart.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-product-angle-back", "name": "product-angle-back", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/product-angle-back.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-product-angle-box", "name": "product-angle-box", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/product-angle-box.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-product-angle-side", "name": "product-angle-side", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/product-angle-side.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-product-detail-charging", "name": "product-detail-charging", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/product-detail-charging.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "pdp-ugc-selfie-testimonial", "name": "ugc-selfie-testimonial", "category": "pdp", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/ugc-selfie-testimonial.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-competitor-mask-1", "name": "competitor-mask-1", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/competitor-mask-1.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-competitor-mask-2", "name": "competitor-mask-2", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/competitor-mask-2.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-competitor-mask-3", "name": "competitor-mask-3", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/competitor-mask-3.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-competitor-mask-4", "name": "competitor-mask-4", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/competitor-mask-4.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-five-masks-comparison-flatlay", "name": "five-masks-comparison-flatlay", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/five-masks-comparison-flatlay.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-lifestyle-woman-comparing", "name": "lifestyle-woman-comparing", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/lifestyle-woman-comparing.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-luxebeam-winner-badge", "name": "luxebeam-winner-badge", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/luxebeam-winner-badge.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-results-skin-closeup", "name": "results-skin-closeup", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-skin-closeup.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "top5-trust-badges-scene", "name": "trust-badges-scene", "category": "top5", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/trust-badges-scene.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-easy-routine-evening-bed", "name": "easy-routine-evening-bed", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/easy-routine-evening-bed.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-lifestyle-morning-routine", "name": "lifestyle-morning-routine", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/lifestyle-morning-routine.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-problem-frustrated-mirror", "name": "problem-frustrated-mirror", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/problem-frustrated-mirror.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-reason1-collagen-science", "name": "reason1-collagen-science", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason1-collagen-science.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-reason2-wrinkle-reduction", "name": "reason2-wrinkle-reduction", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason2-wrinkle-reduction.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-reason3-acne-healing", "name": "reason3-acne-healing", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason3-acne-healing.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-reason4-circulation", "name": "reason4-circulation", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason4-circulation.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-reason5-painless", "name": "reason5-painless", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason5-painless.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-reason6-home-convenience", "name": "reason6-home-convenience", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason6-home-convenience.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-reason7-cost-savings", "name": "reason7-cost-savings", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/reason7-cost-savings.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-testimonial-jennifer-44", "name": "testimonial-jennifer-44", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/testimonial-jennifer-44.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-testimonial-maria-52", "name": "testimonial-maria-52", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/testimonial-maria-52.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "7reasons-testimonial-sarah-47", "name": "testimonial-sarah-47", "category": "7reasons", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/testimonial-sarah-47.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "creative-comparison-overwhelmed-vs-simple", "name": "comparison-overwhelmed-vs-simple", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-overwhelmed-vs-simple.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "creative-first-use-excitement", "name": "first-use-excitement", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/first-use-excitement.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "creative-first-use-wearing", "name": "first-use-wearing", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/first-use-wearing.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "creative-protagonist-discovery", "name": "protagonist-discovery", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/protagonist-discovery.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "creative-protagonist-sarah-mirror", "name": "protagonist-sarah-mirror", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/protagonist-sarah-mirror.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "creative-results-2weeks", "name": "results-2weeks", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-2weeks.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "creative-results-6weeks", "name": "results-6weeks", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-6weeks.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "creative-transformation-confidence-portrait", "name": "transformation-confidence-portrait", "category": "creative", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/transformation-confidence-portrait.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-clinical-comparison", "name": "clinical-comparison", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/clinical-comparison.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-comparison-treatments", "name": "comparison-treatments", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/comparison-treatments.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-demographic-women", "name": "demographic-women", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/demographic-women.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-expert-authority-dermatologist", "name": "expert-authority-dermatologist", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/expert-authority-dermatologist.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-fda-clinical-setting", "name": "fda-clinical-setting", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/fda-clinical-setting.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-home-vs-clinic-split", "name": "home-vs-clinic-split", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/home-vs-clinic-split.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-informed-reader-mask-subtle", "name": "informed-reader-mask-subtle", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/informed-reader-mask-subtle.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-journalist-research-desk", "name": "journalist-research-desk", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/journalist-research-desk.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-patient-treatment", "name": "patient-treatment", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/patient-treatment.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}, {"id": "news-results-timeline", "name": "results-timeline", "category": "news", "cdn_url": "https://cdn.shopify.com/s/files/1/0462/8591/4267/files/results-timeline.png", "prompt": null, "reference_image": null, "model": "gemini-image", "generated_at": "2026-03-05", "status": "pending"}], "good_prompts": []};</script>
 </head>
 <body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<h1>🔮 LMM Command Center</h1>
-<p class="subtitle">Little Miss Mineral — Last updated: March 16, 2026 6:15 PM PDT</p>
+<!-- Hamburger (mobile) -->
+<button class="hamburger mobile-toggle" id="hamburger" aria-label="Toggle menu" onclick="toggleSidebar()">☰</button>
 
-<div class="tabs">
-  <div class="tab active" onclick="showPanel('overview')">Overview</div>
-  <div class="tab" onclick="showPanel('luxebeam')">LuxeBeam</div>
-  <div class="tab" onclick="showPanel('products')">All Products</div>
-  <div class="tab" onclick="showPanel('systems')">Systems</div>
-  <div class="tab" onclick="showPanel('copy')">Copy System</div>
-  <div class="tab" onclick="showPanel('knowledge')">Knowledge</div>
-  <div class="tab" onclick="showPanel('toolchain')">Toolchain</div>
-</div>
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- ========== OVERVIEW ========== -->
-<div class="panel active" id="panel-overview">
-  <div class="stats">
-    <div class="stat-card green">
-      <div class="label">Products Live</div>
-      <div class="value">6</div>
-      <div class="detail">GitHub Pages (unverified)</div>
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">LMM</div>
+    <div class="logo-text">LuxeBeam Ops</div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="nav-item active" data-tab="pages">
+      <span class="icon">📄</span>
+      <span>Pages</span>
+      <span class="nav-badge" id="navBadgePages">—</span>
     </div>
-    <div class="stat-card blue">
-      <div class="label">Pipeline Active</div>
-      <div class="value">1</div>
-      <div class="detail">LuxeBeam — V2 copy pushed</div>
+    <div class="nav-item" data-tab="ads">
+      <span class="icon">📢</span>
+      <span>Ads</span>
+      <span class="nav-badge" id="navBadgeAds">—</span>
     </div>
-    <div class="stat-card red">
-      <div class="label">Broken</div>
-      <div class="value">3</div>
-      <div class="detail">Menopause, Peri, Crepey</div>
+    <div class="nav-item" data-tab="page-image-review">
+      <span class="icon">🖼️</span>
+      <span>Page Images</span>
+      <span class="nav-badge" id="navBadgePageReview">—</span>
     </div>
-    <div class="stat-card">
-      <div class="label">Total Pages</div>
-      <div class="value">31</div>
-      <div class="detail">26 live + 5 LuxeBeam</div>
+    <div class="nav-item" data-tab="ad-image-review">
+      <span class="icon">📢</span>
+      <span>Ad Images</span>
+      <span class="nav-badge" id="navBadgeAdReview">—</span>
     </div>
-    <div class="stat-card green">
-      <div class="label">Copy System</div>
-      <div class="value">V2</div>
-      <div class="detail">COPY_DNA + SPAWN v6</div>
+    <div class="nav-item" data-tab="images">
+      <span class="icon">🗂️</span>
+      <span>Images</span>
+      <span class="nav-badge" id="navBadgeImages">—</span>
     </div>
-    <div class="stat-card">
-      <div class="label">Agents</div>
-      <div class="value">10</div>
-      <div class="detail">orchestrator + 9 specialized</div>
+    <div class="nav-item" data-tab="todo">
+      <span class="icon">✅</span>
+      <span>Todo</span>
+      <span class="nav-badge" id="navBadgeTodo">—</span>
     </div>
+  </nav>
+  <div class="sidebar-footer" id="sidebarFooter">Loading...</div>
+</aside>
+
+<!-- Main Content -->
+<main class="main" id="mainContent">
+  <!-- Loading state -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="spinner"></div>
+    <span style="color: var(--muted);">Loading dashboard…</span>
   </div>
 
-  <h3 style="color:#fff; margin-bottom:12px;">📋 Today's Activity — March 16</h3>
-  <div class="timeline">
-    <div class="timeline-item done">
-      <div class="time">5:30 PM</div>
-      <div class="desc"><strong>Story page V2</strong> pushed to TBV — "The Night I Realized Skincare Had Been Lying to Me for 11 Years"</div>
-    </div>
-    <div class="timeline-item done">
-      <div class="time">5:45 PM</div>
-      <div class="desc"><strong>Copy system updated</strong> — COPY_DNA.md created, COPY_SPAWN v6, SAM_PREFERENCES updated, COPY_LEARNINGS CF-007–014</div>
-    </div>
-    <div class="timeline-item done">
-      <div class="time">6:06 PM</div>
-      <div class="desc"><strong>Ranking page V2</strong> pushed to TBV — "I Wasted $4,200 on Red Light Therapy Masks So You Don't Have To"</div>
-    </div>
-    <div class="timeline-item done">
-      <div class="time">6:12 PM</div>
-      <div class="desc"><strong>Ranking deepened</strong> — Each competitor section expanded to 450-500+ words per Sam's request</div>
-    </div>
-    <div class="timeline-item done">
-      <div class="time">6:15 PM</div>
-      <div class="desc"><strong>Authority page V2</strong> pushed to TBV — "My Dermatologist Told Me to Stop Booking LED Appointments"</div>
-    </div>
-    <div class="timeline-item active">
-      <div class="time">Now</div>
-      <div class="desc"><strong>Sam swapping images</strong> on all 3 pages in Shopify customizer</div>
-    </div>
+  <!-- Error state -->
+  <div class="error-screen" id="errorScreen" style="display:none;">
+    <span style="font-size:36px;">⚠️</span>
+    <span style="font-size:18px;font-weight:600;">Failed to load data</span>
+    <span class="error-msg" id="errorMsg"></span>
   </div>
 
-  <h3 style="color:#fff; margin:20px 0 12px;">🔥 Active Right Now</h3>
-  <div class="system-card">
-    <h4>LuxeBeam V2 Copy — All 3 Advertorials Pushed</h4>
-    <div class="sys-status green-text">✅ Story + Ranking + Authority pushed to TBV</div>
-    <div class="sys-detail">Emotion-first rewrites. Unique big ideas per page. 17/17 avatar phrases used verbatim. Sam handling image swaps.</div>
-  </div>
-  <div class="system-card">
-    <h4>Copy System V2 Upgrade</h4>
-    <div class="sys-status green-text">✅ Complete — all future pipelines get V2 copy</div>
-    <div class="sys-detail">COPY_DNA.md (8 principles) • COPY_SPAWN v6 • SAM_PREFERENCES updated • 14 copy learnings codified</div>
-  </div>
-  <div class="system-card">
-    <h4>Shopify Image Fix</h4>
-    <div class="sys-status green-text">✅ Complete — image_picker Liquid bug fixed</div>
-    <div class="sys-detail">LMM + TBV stores: 6 sections / 17 image fixes each. All image_picker objects now use | image_url filter.</div>
-  </div>
-</div>
-
-<!-- ========== LUXEBEAM ========== -->
-<div class="panel" id="panel-luxebeam">
-  <h3 style="color:#fff; margin-bottom:16px;">LuxeBeam Red Light Therapy Mask</h3>
-  
-  <div class="stats" style="margin-bottom:20px;">
-    <div class="stat-card green">
-      <div class="label">Pages Pushed</div>
-      <div class="value">4/5</div>
-      <div class="detail">Mechanism + Story + Ranking + Authority</div>
+  <!-- Tab: Pages -->
+  <div class="tab-content" id="tab-pages">
+    <div class="section-header">
+      <div class="section-title">Pages</div>
+      <div class="section-subtitle" id="pagesSubtitle"></div>
     </div>
-    <div class="stat-card blue">
-      <div class="label">Copy Version</div>
-      <div class="value">V2</div>
-      <div class="detail">Emotion-first, avatar-centric</div>
-    </div>
-    <div class="stat-card yellow">
-      <div class="label">Images</div>
-      <div class="value">Pending</div>
-      <div class="detail">Sam swapping in customizer</div>
-    </div>
+    <div class="pages-grid" id="pagesGrid"></div>
   </div>
 
-  <div class="luxebeam-pages">
-    <div class="lux-card">
-      <h4>PDP</h4>
-      <a class="url" href="https://littlemissmineral.com/products/luxebeam-red-light-therapy-led-face-mask" target="_blank">littlemissmineral.com/products/luxebeam-...led-face-mask</a>
-      <span class="tag shopify">Shopify LMM</span>
+  <!-- Tab: Ads -->
+  <div class="tab-content" id="tab-ads">
+    <div class="section-header">
+      <div class="section-title">Ads</div>
+      <div class="section-subtitle" id="adsSubtitle"></div>
     </div>
+    <div class="filter-tabs" id="adsFilterTabs"></div>
+    <div class="ads-list" id="adsList"></div>
+  </div>
 
-    <div class="lux-card">
-      <h4>Mechanism Advertorial</h4>
-      <a class="url" href="https://littlemissmineral.com/pages/why-your-serum-cant-reach-4mm-deep" target="_blank">LMM: why-your-serum-cant-reach-4mm-deep</a>
-      <span class="tag shopify">Shopify LMM</span>
-      <span class="tag v2-pushed">Clean build deployed</span>
-      <div class="meta" style="margin-top:8px;">
-        <strong style="color:#4ade80;">advert-1-mar11:</strong> 7 sections, zero hardcoded content, zero ecomwize residue
+  <!-- Tab: Images -->
+  <div class="tab-content" id="tab-images">
+    <div class="section-header">
+      <div class="section-title">Images</div>
+      <div class="section-subtitle" id="imagesSubtitle"></div>
+    </div>
+    <div class="filter-tabs" id="imagesFilterTabs"></div>
+    <div class="images-grid" id="imagesGrid"></div>
+  </div>
+
+  <!-- Tab: Page Image Reviews -->
+  <div class="tab-content" id="tab-page-image-review">
+    <div class="section-header">
+      <div class="section-title">Page Image Reviews</div>
+      <div class="section-subtitle" id="pageReviewSubtitle"></div>
+    </div>
+    <div class="review-progress-bar-wrap" id="pageReviewProgress">
+      <div class="review-progress-text" id="pageReviewProgressText"></div>
+      <div class="review-progress-bar">
+        <div class="review-progress-fill" id="pageReviewProgressFill"></div>
       </div>
     </div>
+    <div id="pageReviewContent"></div>
+  </div>
 
-    <div class="lux-card">
-      <h4>Story Advertorial — V2 COPY PUSHED ✅</h4>
-      <a class="url" href="https://thebeautyverdict.com/pages/i-replaced-my-400-skincare-routine-with-10-minutes-of-light" target="_blank">TBV: i-replaced-my-400-skincare-routine...</a>
-      <span class="tag shopify">Shopify TBV</span>
-      <span class="tag v2-pushed">V2 pushed 6:03 PM</span>
-      <span class="tag images-pending">Images pending</span>
-      <div class="meta" style="margin-top:8px; color:#818cf8;">
-        Big idea: "The Night I Realized Skincare Had Been Lying to Me for 11 Years"<br>
-        Sarah's diary: frustration → bathroom floor → rabbit hole → shopping disaster → discovery → transformation (219 days)
+  <!-- Tab: Ad Image Reviews -->
+  <div class="tab-content" id="tab-ad-image-review">
+    <div class="section-header">
+      <div class="section-title">Ad Image Reviews</div>
+      <div class="section-subtitle" id="adImageReviewSubtitle"></div>
+    </div>
+    <div class="review-progress-bar-wrap" id="adImageReviewProgress">
+      <div class="review-progress-text" id="adImageReviewProgressText"></div>
+      <div class="review-progress-bar">
+        <div class="review-progress-fill" id="adImageReviewProgressFill"></div>
       </div>
     </div>
+    <div id="adImageReviewContent"></div>
+  </div>
 
-    <div class="lux-card">
-      <h4>Top 5 Ranking — V2 COPY PUSHED ✅</h4>
-      <a class="url" href="https://thebeautyverdict.com/pages/best-red-light-therapy-masks-2026" target="_blank">TBV: best-red-light-therapy-masks-2026</a>
-      <span class="tag shopify">Shopify TBV</span>
-      <span class="tag v2-pushed">V2 pushed 6:12 PM (deepened)</span>
-      <span class="tag images-pending">Images pending</span>
-      <div class="meta" style="margin-top:8px; color:#818cf8;">
-        Big idea: "I Wasted $4,200 on Red Light Therapy Masks So You Don't Have To"<br>
-        Each competitor = personal disappointment story (450-500+ words each). LuxeBeam earned at #1.
-      </div>
+    <!-- Tab: Todo -->
+  <div class="tab-content" id="tab-todo">
+    <div class="section-header">
+      <div class="section-title">Todo</div>
+      <div class="todo-summary" id="todoSummary"></div>
     </div>
-
-    <div class="lux-card">
-      <h4>Authority Advertorial — V2 COPY PUSHED ✅</h4>
-      <a class="url" href="https://thebeautyverdict.com/pages/dermatologists-are-ditching-clinics-for-this-249-device" target="_blank">TBV: dermatologists-are-ditching...</a>
-      <span class="tag shopify">Shopify TBV</span>
-      <span class="tag v2-pushed">V2 pushed 6:15 PM</span>
-      <span class="tag images-pending">Images pending</span>
-      <div class="meta" style="margin-top:8px; color:#818cf8;">
-        Big idea: "My Dermatologist Told Me to Stop Booking LED Appointments"<br>
-        Lauren's derm hands her money back. $13,200 clinic math. Water filter + garden watering analogies. 12 reviews.
-      </div>
-    </div>
+    <div id="todoGroups"></div>
   </div>
+</main>
 
-  <h3 style="color:#fff; margin:20px 0 12px;">V2 Copy Files</h3>
-  <div class="lux-card">
-    <div class="meta">
-      <code>pipeline/active/luxebeam/copy/STORY_REWRITE_V2.md</code> — 3,600 words<br>
-      <code>pipeline/active/luxebeam/copy/RANKING_REWRITE_V2.md</code> — 2,800 words (deepened on Shopify)<br>
-      <code>pipeline/active/luxebeam/copy/AUTHORITY_REWRITE_V2.md</code> — 4,600 words<br>
-      <code>pipeline/active/luxebeam/copy/pdp-v2-rewrite.md</code> — PDP rewrite
-    </div>
-  </div>
-
-  <h3 style="color:#fff; margin:20px 0 12px;">Remaining Issues</h3>
-  <div class="issues">
-    <div class="issue">Images need swapping on all 3 V2 pages (Sam handling)</div>
-    <div class="issue">Ecomwize URLs still in Liquid HTML on Story/Ranking/Authority (218-352 refs)</div>
-    <div class="issue">Same placeholder image duplicated across sections</div>
-  </div>
-  <div style="margin-top:8px;">
-    <div class="done">V2 copy pushed to all 3 advertorial pages</div>
-    <div class="done">image_picker Liquid bug fixed on both stores</div>
-    <div class="done">Mechanism page clean-built (zero residue)</div>
-  </div>
-</div>
-
-<!-- ========== ALL PRODUCTS ========== -->
-<div class="panel" id="panel-products">
-  <div class="product-grid">
-    <div class="product-card">
-      <span class="status v2">V2 COPY LIVE</span>
-      <h3>LuxeBeam Red Light Therapy Mask</h3>
-      <div class="slug">red-light-mask / luxebeam</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://littlemissmineral.com/products/luxebeam-red-light-therapy-led-face-mask" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://littlemissmineral.com/pages/why-your-serum-cant-reach-4mm-deep" target="_blank">Mechanism ✅</a>
-        <a class="page-link v2" href="https://thebeautyverdict.com/pages/i-replaced-my-400-skincare-routine-with-10-minutes-of-light" target="_blank">Story V2</a>
-        <a class="page-link v2" href="https://thebeautyverdict.com/pages/best-red-light-therapy-masks-2026" target="_blank">Ranking V2</a>
-        <a class="page-link v2" href="https://thebeautyverdict.com/pages/dermatologists-are-ditching-clinics-for-this-249-device" target="_blank">Authority V2</a>
-      </div>
-      <div style="margin-top:8px;">
-        <div class="pending">Images pending on 3 V2 pages</div>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <span class="status live">LIVE</span>
-      <h3>Glow Reset Mask</h3>
-      <div class="slug">glow-reset-mask</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-glow-reset-mask-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-glow-reset-mask-advertorial/" target="_blank">Advert ✅</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <span class="status live">LIVE</span>
-      <h3>Centella Restore Cream</h3>
-      <div class="slug">centella-restore-cream</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-centella-restore-cream-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-centella-restore-cream-advertorial/" target="_blank">Advert ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-centella-restore-cream-ranking/" target="_blank">Ranking ✅</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <span class="status live">LIVE</span>
-      <h3>Lift Reset Cream</h3>
-      <div class="slug">lift-reset-cream</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-lift-reset-cream-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-lift-reset-cream-advertorial/" target="_blank">Advert ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-lift-reset-cream-ranking/" target="_blank">Ranking ✅</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <span class="status live">LIVE</span>
-      <h3>Pure Himalayan Shilajit</h3>
-      <div class="slug">pure-himalayan-shilajit</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-pure-himalayan-shilajit-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-pure-himalayan-shilajit-advertorial/" target="_blank">Advert ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-pure-himalayan-shilajit-ranking/" target="_blank">Ranking ✅</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <span class="status live">LIVE</span>
-      <h3>Mind Bloom Mushroom Gummies</h3>
-      <div class="slug">mind-bloom-mushroom-gummies</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-mind-bloom-mushroom-gummies-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-mind-bloom-mushroom-gummies-advertorial/" target="_blank">Advert ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-mind-bloom-mushroom-gummies-ranking/" target="_blank">Ranking ✅</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <span class="status live">LIVE</span>
-      <h3>Balance Tracker Smart Scale</h3>
-      <div class="slug">balance-tracker</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-balance-tracker-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-balance-tracker-advertorial/" target="_blank">Advert ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-balance-tracker-ranking/" target="_blank">Ranking ✅</a>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <span class="status broken">BROKEN</span>
-      <h3>Midsection Reset (Menopause)</h3>
-      <div class="slug">menopause-belly</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-menopause-belly-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-menopause-belly-top5/" target="_blank">Top5 ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-menopause-belly-5reasons/" target="_blank">5 Reasons ✅</a>
-      </div>
-      <div class="issues">
-        <div class="issue">Static HTML, no CDN images, no SECRET25. Needs full rebuild.</div>
-      </div>
-    </div>
-
-    <div class="product-card">
-      <span class="status broken">BROKEN</span>
-      <h3>Early Shift (Perimenopause)</h3>
-      <div class="slug">perimenopause</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-perimenopause-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-perimenopause-top5/" target="_blank">Top5 ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-perimenopause-5reasons/" target="_blank">5 Reasons ✅</a>
-      </div>
-      <div class="issues"><div class="issue">Static HTML. Needs full rebuild.</div></div>
-    </div>
-
-    <div class="product-card">
-      <span class="status broken">BROKEN</span>
-      <h3>Dermal Matrix (Crepey Skin)</h3>
-      <div class="slug">crepey-skin</div>
-      <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-crepey-skin-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-crepey-skin-top5/" target="_blank">Top5 ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-crepey-skin-5reasons/" target="_blank">5 Reasons ✅</a>
-      </div>
-      <div class="issues"><div class="issue">0 Shopify images, no SECRET25. Needs full rebuild.</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== SYSTEMS ========== -->
-<div class="panel" id="panel-systems">
-  <h3 style="color:#fff; margin-bottom:16px;">All Systems</h3>
-
-  <div class="system-card">
-    <h4>🏗️ Pipeline Engine</h4>
-    <div class="sys-status green-text">✅ Operational</div>
-    <div class="sys-detail">launch.sh → Phase 0 (design-intel) → Phase 1 (research) → Phase 2 (copy) → Phase 3 (images+shopify) → Phase 4 (build+qa)</div>
-  </div>
-
-  <div class="system-card">
-    <h4>✍️ Copy System V2</h4>
-    <div class="sys-status green-text">✅ Upgraded March 16</div>
-    <div class="sys-detail">COPY_DNA.md (8 principles) • COPY_SPAWN v6 • SAM_PREFERENCES updated • 14 learnings (CF-001 to CF-014) • Emotion-first architecture</div>
-  </div>
-
-  <div class="system-card">
-    <h4>🛒 Shopify Integration</h4>
-    <div class="sys-status green-text">✅ Both stores connected</div>
-    <div class="sys-detail">LMM: orthocliner.myshopify.com • TBV: the-beauty-verdict.myshopify.com (token auto-refreshes every 12h)</div>
-  </div>
-
-  <div class="system-card">
-    <h4>🔧 Clean-Build Toolchain</h4>
-    <div class="sys-status green-text">✅ Complete — Tested on Mechanism page</div>
-    <div class="sys-detail">blueprint_extract.py • section_build.py • template_assemble.py • Zero hardcoded content architecture</div>
-  </div>
-
-  <div class="system-card">
-    <h4>📊 Ad Intelligence</h4>
-    <div class="sys-status green-text">✅ Operational</div>
-    <div class="sys-detail">767 ads analyzed for LuxeBeam • 3 layers • 28 keywords • 8 brands • Copy patterns + transferable patterns extracted</div>
-  </div>
-
-  <div class="system-card">
-    <h4>📝 Memory System</h4>
-    <div class="sys-status green-text">✅ Operational</div>
-    <div class="sys-detail">memory-index (SQLite FTS5) • PRODUCT_HISTORY • AGENT_MEMORY • SAM_PREFERENCES • LEARNED_RULES • COPY_LEARNINGS</div>
-  </div>
-
-  <div class="system-card">
-    <h4>🎨 Image Generation</h4>
-    <div class="sys-status yellow-text">⚠️ Sam handling manually</div>
-    <div class="sys-detail">Nano Banana Pro available. AI hallucination on product design. Sam swapping images in Shopify customizer.</div>
-  </div>
-
-  <div class="system-card">
-    <h4>🧠 Knowledge Acquisition Engine</h4>
-    <div class="sys-status yellow-text">⚠️ Partially operational</div>
-    <div class="sys-detail">18 skill files • SQLite + FTS5 • Bookmark extraction ✅ • Single tweet partially broken</div>
-  </div>
-</div>
-
-<!-- ========== COPY SYSTEM ========== -->
-<div class="panel" id="panel-copy">
-  <h3 style="color:#fff; margin-bottom:16px;">Copy System V2 — Updated March 16</h3>
-
-  <div class="stats" style="margin-bottom:20px;">
-    <div class="stat-card green">
-      <div class="label">Copy Version</div>
-      <div class="value">V2</div>
-      <div class="detail">Emotion-first architecture</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Learnings</div>
-      <div class="value">14</div>
-      <div class="detail">CF-001 through CF-014</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Spawn Version</div>
-      <div class="value">v6</div>
-      <div class="detail">COPY_DNA integrated</div>
-    </div>
-    <div class="stat-card yellow">
-      <div class="label">Fix Proposals</div>
-      <div class="value">4</div>
-      <div class="detail">Pending Sam review</div>
-    </div>
-  </div>
-
-  <h4 style="color:#aaa; margin-bottom:8px;">V2 Files (new)</h4>
-  <div class="system-card">
-    <h4>COPY_DNA.md</h4>
-    <div class="sys-status green-text">✅ Created March 16</div>
-    <div class="sys-detail">8 non-negotiable principles: emotion-first arc, avatar language verbatim (50%+), no em dashes, story-first product-last, analogy-first, competitor teardown via shopping journey, transformation timeline, unique big idea per page</div>
-  </div>
-  <div class="system-card">
-    <h4>COPY_SPAWN.md v6</h4>
-    <div class="sys-status green-text">✅ Updated March 16</div>
-    <div class="sys-detail">COPY_DNA is now Read First #0. V2 rules block inserted before all output instructions. v5 archived.</div>
-  </div>
-  <div class="system-card">
-    <h4>SAM_PREFERENCES.md</h4>
-    <div class="sys-status green-text">✅ Updated March 16</div>
-    <div class="sys-detail">V2 approvals added: emotion-first arc, avatar-centric big ideas, story-as-proof structure. V1 rejections logged.</div>
-  </div>
-  <div class="system-card">
-    <h4>COPY_LEARNINGS.md</h4>
-    <div class="sys-status green-text">✅ 14 rules (CF-001 to CF-014)</div>
-    <div class="sys-detail">Latest: CF-007 (emotion-first), CF-008 (no em dashes), CF-009 (analogy-first), CF-010 (competitor via shopping journey), CF-011 (verbatim avatar language), CF-012 (transformation timeline), CF-013 (unique big idea per page), CF-014 (product name buried)</div>
-  </div>
-
-  <h4 style="color:#aaa; margin:16px 0 8px;">Pending Fix Proposals (Sam to review)</h4>
-  <div class="system-card">
-    <h4>FIX_01: Format vs. Craft</h4>
-    <div class="sys-status yellow-text">⏳ Pending review</div>
-    <div class="sys-detail">Split COPY_SPAWN into Phase A (Think → COPY_STRATEGY.md) + Phase B (Execute → STRUCTURED_COPY.md). Cost: ~$0.15-0.30/pipeline.</div>
-  </div>
-  <div class="system-card">
-    <h4>FIX_04: Zero Feedback Data</h4>
-    <div class="sys-status yellow-text">⏳ Pending review</div>
-    <div class="sys-detail">3 feedback loops: Copy Diff, Image Gen, Conversation Feedback.</div>
-  </div>
-  <div class="system-card">
-    <h4>FIX_05: Mechanism Page Framework</h4>
-    <div class="sys-status yellow-text">⏳ Pending review</div>
-    <div class="sys-detail">Page playbooks for 5 page types with 10-section structure.</div>
-  </div>
-  <div class="system-card">
-    <h4>FIX_07: Sam Calibration</h4>
-    <div class="sys-status yellow-text">⏳ Pending review</div>
-    <div class="sys-detail">SAMS_COPY_DNA.md, CALIBRATION_EXAMPLES.md, scoring rubric (6 dimensions, min 7.0 avg). Cost: ~$0.80 one-time + $0.20/pipeline.</div>
-  </div>
-</div>
-
-<!-- ========== KNOWLEDGE ========== -->
-<div class="panel" id="panel-knowledge">
-  <h3 style="color:#fff; margin-bottom:16px;">Knowledge Engine — 18 Skill Files</h3>
-  
-  <div class="stats" style="margin-bottom:20px;">
-    <div class="stat-card green"><div class="label">Skills</div><div class="value">18</div></div>
-    <div class="stat-card"><div class="label">Sources</div><div class="value">30</div></div>
-    <div class="stat-card"><div class="label">Categories</div><div class="value">5</div></div>
-  </div>
-
-  <h4 style="color:#aaa; margin-bottom:8px;">Active Skills (mapped to agents)</h4>
-  <ul class="skill-list">
-    <li>Google Ads Competitor Conquest <span class="source">@blvckledge</span> <span class="agents">→ researcher, copywriter, builder</span></li>
-    <li>Advertorial Funnel Strategy <span class="source">@CarlWeische</span> <span class="agents">→ copywriter, researcher</span></li>
-    <li>8-Figure Funnel SOP <span class="source">@CarlWeische</span> <span class="agents">→ orchestrator, researcher, copywriter, builder</span></li>
-    <li>DTC Advertorial Copywriting Framework <span class="source">@CarlWeische</span> <span class="agents">→ copywriter</span></li>
-    <li>Landing Page Elements ($10M brands) <span class="source">@CarlWeische</span> <span class="agents">→ builder, copywriter</span></li>
-    <li>Google Ads Automation (GTM Engineering) <span class="source">@codyschneiderxx</span> <span class="agents">→ researcher, builder</span></li>
-    <li>Native Ad Storytelling <span class="source">@advertising_jan</span> <span class="agents">→ copywriter</span></li>
-    <li>TikTok Fear Content Funnel <span class="source">@knoxtwts</span> <span class="agents">→ copywriter</span></li>
-    <li>Video Ad CPA Structure <span class="source">@JxrdanB_</span> <span class="agents">→ copywriter</span></li>
-    <li>Landing Page Iteration <span class="source">@charaf_ecomwize</span> <span class="agents">→ builder</span></li>
-    <li>SEO Keyword Research 7-Step <span class="source">@ConnorGillivan</span> <span class="agents">→ researcher, copywriter</span></li>
-    <li>Copywriting Frameworks (PASTOR, AIDA, etc.) <span class="source">@thePhilRivers</span> <span class="agents">→ copywriter</span></li>
-    <li>Meta Ads Diagnostic <span class="source">@carlosvillu</span> <span class="agents">→ orchestrator</span></li>
-    <li>Agent Team Orchestration <span class="source">@mikefutia</span> <span class="agents">→ orchestrator</span></li>
-  </ul>
-</div>
-
-<!-- ========== TOOLCHAIN ========== -->
-<div class="panel" id="panel-toolchain">
-  <h3 style="color:#fff; margin-bottom:16px;">Tools & Scripts</h3>
-
-  <h4 style="color:#aaa; margin-bottom:8px;">Clean-Build Toolchain ✅</h4>
-  <div class="tool-card"><code>blueprint_extract.py</code><div class="desc">Extracts CSS/layout from EcomWize templates → blueprint JSON (zero content)</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
-  <div class="tool-card"><code>section_build.py</code><div class="desc">Blueprint + copy → clean .liquid section with full schema</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
-  <div class="tool-card"><code>template_assemble.py</code><div class="desc">All sections → page template JSON with settings populated from copy</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
-  <div class="tool-card"><code>diff_capture.py</code><div class="desc">Captures Sam's manual edits by diffing live vs baseline snapshots</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
-
-  <h4 style="color:#aaa; margin:16px 0 8px;">Pipeline Scripts</h4>
-  <div class="tool-card"><code>launch.sh</code><div class="desc">Main pipeline launcher — Phase 0→4 with state management</div><div class="loc">~/.openclaw/scripts/</div></div>
-  <div class="tool-card"><code>refresh-tbv-token.sh</code><div class="desc">Auto-refreshes TBV Shopify token via OAuth (cron every 12h)</div><div class="loc">~/.openclaw/workspace-orchestrator/scripts/</div></div>
-  <div class="tool-card"><code>inject-memory.sh</code><div class="desc">Injects agent memory block into spawn prompts</div><div class="loc">~/.openclaw/scripts/</div></div>
-
-  <h4 style="color:#aaa; margin:16px 0 8px;">Copy System</h4>
-  <div class="tool-card"><code>COPY_SPAWN.md v6</code><div class="desc">Master copywriter spawn prompt. V2: COPY_DNA integrated as Read First #0.</div><div class="loc">~/.openclaw/workspace-orchestrator/prompts/</div></div>
-  <div class="tool-card"><code>COPY_DNA.md</code><div class="desc">8 non-negotiable V2 principles. Emotion-first, avatar language, no em dashes.</div><div class="loc">~/.openclaw/workspace-copywriter/knowledge/</div></div>
-  <div class="tool-card"><code>COPY_QUALITY_GATE.md</code><div class="desc">Quality gate prompt for copy validation before push.</div><div class="loc">~/.openclaw/workspace-orchestrator/prompts/</div></div>
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="Preview">
 </div>
 
 <script>
-function showPanel(name) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  event.target.classList.add('active');
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  var o = document.getElementById('sidebarOverlay');
+  if (o) o.classList.toggle('active');
 }
 </script>
+<script>
+/* ===== STATE ===== */
+let DATA = null;
+let todoDone = {};
+const STORAGE_KEY = 'dashboard_todo_done';
+const REVIEW_STORAGE_KEY = 'dashboard_image_review';
+let reviewDecisions = {};
+let reviewImages = [];
+let reviewFilteredIdx = [];
+let reviewCurrentPos = 0;
+let reviewShowAll = false;
+let reviewEventsSetup = false;
+let pageReviewData = {};
+let adImageReviewData = {};
+let pageReviewBatch = 0;
+let adImageReviewBatch = 0;
+const PAGE_REVIEW_KEY = 'dashboard_page_image_review';
+const AD_IMAGE_REVIEW_KEY = 'dashboard_ad_image_review';
 
+
+
+
+
+
+/* ===== INIT ===== */
+(async function init() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) todoDone = JSON.parse(stored);
+  } catch(e) {}
+  try {
+    const storedPageReview = localStorage.getItem(PAGE_REVIEW_KEY);
+    if (storedPageReview) pageReviewData = JSON.parse(storedPageReview);
+  } catch(e) {}
+  try {
+    const storedAdImageReview = localStorage.getItem(AD_IMAGE_REVIEW_KEY);
+    if (storedAdImageReview) adImageReviewData = JSON.parse(storedAdImageReview);
+  } catch(e) {}
+  try {
+    const s = localStorage.getItem(AD_REVIEW_KEY);
+    if (s) adReviewData = JSON.parse(s);
+  } catch(e) {}
+  try {
+    const s = localStorage.getItem(PDP_REVIEW_KEY);
+  } catch(e) {}
+
+  try {
+    DATA = window.__DASHBOARD_DATA__;
+    document.getElementById('loadingScreen').style.display = 'none';
+    renderAll();
+    setupNav();
+    setupHash();
+  } catch(err) {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('errorScreen').style.display = 'flex';
+    document.getElementById('errorMsg').textContent = err.message;
+  }
+})();
+
+/* ===== RENDER ALL ===== */
+function renderAll() {
+  renderSidebarBadges();
+  renderFooter();
+  renderPages();
+  renderAds();
+  renderImages();
+  renderTodo();
+  renderPageImageReview();
+  renderAdImageReview();
+  
+}
+
+/* ===== SIDEBAR BADGES ===== */
+function renderSidebarBadges() {
+  document.getElementById('navBadgePages').textContent = DATA.pages.length;
+  document.getElementById('navBadgeAds').textContent = DATA.ads.length;
+  document.getElementById('navBadgeImages').textContent = DATA.images.length;
+  updateTodoBadge();
+  updatePageReviewBadge();
+  updateAdImageReviewBadge();
+  
+}
+
+
+function renderFooter() {
+  const d = new Date(DATA.updated_at);
+  const formatted = d.toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit'
+  });
+  document.getElementById('sidebarFooter').textContent = `Last updated: ${formatted}`;
+}
+
+/* ===== PAGES ===== */
+function renderPages() {
+  const grid = document.getElementById('pagesGrid');
+  document.getElementById('pagesSubtitle').textContent =
+    `${DATA.pages.length} pages across ${new Set(DATA.pages.map(p => p.store)).size} stores`;
+
+  grid.innerHTML = DATA.pages.map(page => {
+    const storeBadge = page.store === 'lmm'
+      ? '<span class="badge badge-purple">LMM</span>'
+      : '<span class="badge badge-blue">TBV</span>';
+
+    const statusMap = {
+      'Sam Fixing': { cls: 'badge-yellow', label: 'Sam Fixing Now' },
+      'Ecomwize Contaminated': { cls: 'badge-red', label: 'Ecomwize Contaminated' },
+      'Image Issues': { cls: 'badge-orange', label: 'Image Issues' },
+      'Live': { cls: 'badge-green', label: 'Live' },
+    };
+    const st = statusMap[page.status_label] || { cls: 'badge-gray', label: page.status_label };
+    const statusBadge = `<span class="badge ${st.cls}">${st.label}</span>`;
+
+    const issuesHtml = page.issues.length > 0
+      ? `<ul class="issues-list">${page.issues.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`
+      : '<div class="no-issues">✓ No issues</div>';
+
+    return `
+      <div class="card">
+        <div class="page-card-header">
+          <div class="page-name">${esc(page.name)}</div>
+          <div class="page-badges">${storeBadge}${statusBadge}</div>
+        </div>
+        <div class="page-meta">
+          <span>Template: ${esc(page.template)}</span>
+          <span>${page.sections} sections</span>
+        </div>
+        <div class="page-buttons">
+          <a href="${esc(page.live_url)}" target="_blank" class="btn btn-primary btn-sm">View Live Page →</a>
+          <a href="${esc(page.admin_url)}" target="_blank" class="btn btn-secondary btn-sm">Open in Shopify →</a>
+        </div>
+        ${issuesHtml}
+      </div>`;
+  }).join('');
+}
+
+/* ===== ADS ===== */
+function renderAds() {
+  const campaigns = [...new Set(DATA.ads.map(a => a.campaign))];
+  const counts = {};
+  campaigns.forEach(c => { counts[c] = DATA.ads.filter(a => a.campaign === c).length; });
+
+  // Build destination URL map from pages
+  const destUrlMap = {};
+  DATA.pages.forEach(p => { destUrlMap[p.name] = p.live_url; });
+
+  document.getElementById('adsSubtitle').textContent =
+    `${DATA.ads.length} ads across ${campaigns.length} campaigns`;
+
+  // Filter tabs
+  const tabsEl = document.getElementById('adsFilterTabs');
+  tabsEl.innerHTML = `<button class="filter-tab active" data-filter="all">All (${DATA.ads.length})</button>` +
+    campaigns.map(c => `<button class="filter-tab" data-filter="${esc(c)}">${esc(c)} (${counts[c]})</button>`).join('');
+
+  tabsEl.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabsEl.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterAds(btn.dataset.filter);
+    });
+  });
+
+  renderAdCards(DATA.ads, destUrlMap);
+}
+
+function renderAdCards(ads, destUrlMap) {
+  const list = document.getElementById('adsList');
+  const campaignColors = {
+    'Mechanism': 'badge-purple',
+    'Ranking': 'badge-blue',
+    'Authority': 'badge-green',
+    'Retargeting': 'badge-orange'
+  };
+
+  // Build destination URL map if not passed
+  if (!destUrlMap) {
+    destUrlMap = {};
+    DATA.pages.forEach(p => { destUrlMap[p.name] = p.live_url; });
+  }
+
+  list.innerHTML = ads.map(ad => {
+    const campBadge = `<span class="badge ${campaignColors[ad.campaign] || 'badge-gray'}">${esc(ad.campaign)}</span>`;
+    const hookTypeBadge = ad.hook_type
+      ? `<span class="badge badge-gray">${esc(ad.hook_type)}</span>`
+      : '';
+
+    const destUrl = destUrlMap[ad.destination] || '#';
+    const destLink = `<a href="${esc(destUrl)}" target="_blank">${esc(ad.destination)}</a>`;
+
+    return `
+      <div class="card ad-card" data-campaign="${esc(ad.campaign)}">
+        <div class="ad-card-top">
+          ${campBadge}
+          <span class="ad-number">Ad #${ad.id}</span>
+          ${hookTypeBadge}
+        </div>
+        ${ad.image_url ? `<div class="ad-image"><img src="${esc(ad.image_url)}" loading="lazy" alt="${esc(ad.angle)}" /></div>` : ''}
+        <div class="ad-hook">${esc(ad.hook)}</div>
+        <div class="ad-angle">${esc(ad.angle)}</div>
+        <div class="ad-destination">→ ${destLink}</div>
+        <button class="ad-expand-toggle" onclick="toggleAdBody(this)">Show full copy ▼</button>
+        <div class="ad-body-wrap">
+          <div class="ad-body">
+            <button class="copy-btn" onclick="copyText(this, ${ad.id})">Copy</button>
+            ${esc(ad.body)}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterAds(filter) {
+  const cards = document.querySelectorAll('.ad-card');
+  cards.forEach(card => {
+    if (filter === 'all' || card.dataset.campaign === filter) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+function toggleAdBody(btn) {
+  const wrap = btn.nextElementSibling;
+  const expanded = wrap.classList.toggle('expanded');
+  btn.textContent = expanded ? 'Hide full copy ▲' : 'Show full copy ▼';
+}
+
+function copyText(btn, adId) {
+  const ad = DATA.ads.find(a => a.id === adId);
+  if (!ad) return;
+  navigator.clipboard.writeText(ad.body).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+/* ===== IMAGES ===== */
+function renderImages() {
+  const categories = [...new Set(DATA.images.map(i => i.category))];
+  const counts = {};
+  categories.forEach(c => { counts[c] = DATA.images.filter(i => i.category === c).length; });
+
+  document.getElementById('imagesSubtitle').textContent =
+    `${DATA.images.length} images across ${categories.length} categories`;
+
+  // Filter tabs
+  const tabsEl = document.getElementById('imagesFilterTabs');
+  tabsEl.innerHTML = `<button class="filter-tab active" data-filter="all">All (${DATA.images.length})</button>` +
+    categories.map(c => `<button class="filter-tab" data-filter="${esc(c)}">${esc(c)} (${counts[c]})</button>`).join('');
+
+  tabsEl.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabsEl.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterImages(btn.dataset.filter);
+    });
+  });
+
+  const grid = document.getElementById('imagesGrid');
+  grid.innerHTML = DATA.images.map(img => {
+    const displayName = img.name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const catColor = {
+      'pdp': 'badge-purple',
+      'top5': 'badge-blue',
+      '7reasons': 'badge-green',
+      'creative': 'badge-orange',
+      'news': 'badge-yellow'
+    }[img.category] || 'badge-gray';
+
+    return `
+      <div class="image-card" data-category="${esc(img.category)}">
+        <img class="image-thumb" src="${esc(img.cdn_url)}" alt="${esc(displayName)}" loading="lazy"
+             onclick="openLightbox('${esc(img.cdn_url)}')">
+        <div class="image-info">
+          <div class="image-name">${esc(displayName)}</div>
+          <div class="image-actions">
+            <span class="badge ${catColor}">${esc(img.category)}</span>
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); copyUrl(this, '${esc(img.cdn_url)}')">Copy URL</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterImages(filter) {
+  document.querySelectorAll('.image-card').forEach(card => {
+    card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+  });
+}
+
+function copyUrl(btn, url) {
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+
+/* ===== LIGHTBOX ===== */
+function openLightbox(url) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightboxImg').src = url;
+  lb.classList.add('active');
+}
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  if (e.target === this) closeLightbox();
+});
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.getElementById('lightboxImg').src = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+/* ===== TODO ===== */
+function renderTodo() {
+  const active = DATA.todo.filter(t => !t.done);
+  const done = DATA.todo.filter(t => t.done);
+  
+  document.getElementById('todoSummary').innerHTML = 
+    `<span style="color: var(--purple); font-weight: 700;">${active.length}</span> active tasks · <span style="color: var(--green); font-weight: 700;">${done.length}</span> completed`;
+  
+  const groups = {};
+  active.forEach(t => {
+    if (!groups[t.group]) groups[t.group] = [];
+    groups[t.group].push(t);
+  });
+  
+  const groupOrder = ['Blockers', 'Active', 'Bugs', 'Pipeline', 'Improvements'];
+  const groupColors = {
+    'Blockers': 'badge-red',
+    'Active': 'badge-yellow', 
+    'Bugs': 'badge-orange',
+    'Pipeline': 'badge-blue',
+    'Improvements': 'badge-gray'
+  };
+  
+  const priorityColors = {
+    'P0': 'badge-red',
+    'P1': 'badge-orange', 
+    'P2': 'badge-blue'
+  };
+  
+  let html = '';
+  
+  // Active groups
+  groupOrder.forEach(g => {
+    if (!groups[g]) return;
+    html += `<div class="todo-group">
+      <div class="todo-group-header">${esc(g)} <span class="badge ${groupColors[g] || 'badge-gray'}" style="font-size:11px;margin-left:6px">${groups[g].length}</span></div>`;
+    
+    groups[g].forEach(t => {
+      html += `<div class="todo-item" data-id="${t.id}">
+        <div class="todo-content" style="flex:1">
+          <div class="todo-text">${esc(t.title)}</div>
+          <div class="todo-desc">${esc(t.description)}</div>
+          ${t.context ? '<div style="font-size:11px;color:#666;margin-top:4px;font-family:monospace;word-break:break-all">📎 ' + esc(t.context) + '</div>' : ''}
+        </div>
+        <div class="todo-badges">
+          <span class="badge ${priorityColors[t.priority] || 'badge-gray'}">${esc(t.priority)}</span>
+        </div>
+      </div>`;
+    });
+    
+    html += '</div>';
+  });
+  
+  // Done section
+  if (done.length > 0) {
+    html += '<div class="todo-group" style="opacity:0.6"><div class="todo-group-header">Done <span class="badge badge-green" style="font-size:11px;margin-left:6px">' + done.length + '</span></div>';
+    done.sort((a, b) => (b.done_at || '').localeCompare(a.done_at || ''));
+    done.forEach(t => {
+      const doneDate = t.done_at ? new Date(t.done_at).toLocaleDateString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) : '';
+      html += '<div class="todo-item" style="text-decoration:line-through;opacity:0.7" data-id="' + t.id + '">' +
+        '<div class="todo-content" style="flex:1">' +
+          '<div class="todo-text">' + esc(t.title) + '</div>' +
+          (doneDate ? '<div style="font-size:11px;color:#4ade80">✓ ' + doneDate + '</div>' : '') +
+        '</div></div>';
+    });
+    html += '</div>';
+  }
+  
+  document.getElementById('todoGroups').innerHTML = html;
+  updateTodoBadge();
+}
+
+function updateTodoBadge() {
+  const active = DATA.todo.filter(t => !t.done).length;
+  document.getElementById('navBadgeTodo').textContent = active;
+}
+
+
+
+function renderFooter() {
+  const d = new Date(DATA.updated_at);
+  const formatted = d.toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit'
+  });
+  document.getElementById('sidebarFooter').textContent = `Last updated: ${formatted}`;
+}
+
+/* ===== PAGES ===== */
+function renderPages() {
+  const grid = document.getElementById('pagesGrid');
+  document.getElementById('pagesSubtitle').textContent =
+    `${DATA.pages.length} pages across ${new Set(DATA.pages.map(p => p.store)).size} stores`;
+
+  grid.innerHTML = DATA.pages.map(page => {
+    const storeBadge = page.store === 'lmm'
+      ? '<span class="badge badge-purple">LMM</span>'
+      : '<span class="badge badge-blue">TBV</span>';
+
+    const statusMap = {
+      'Sam Fixing': { cls: 'badge-yellow', label: 'Sam Fixing Now' },
+      'Ecomwize Contaminated': { cls: 'badge-red', label: 'Ecomwize Contaminated' },
+      'Image Issues': { cls: 'badge-orange', label: 'Image Issues' },
+      'Live': { cls: 'badge-green', label: 'Live' },
+    };
+    const st = statusMap[page.status_label] || { cls: 'badge-gray', label: page.status_label };
+    const statusBadge = `<span class="badge ${st.cls}">${st.label}</span>`;
+
+    const issuesHtml = page.issues.length > 0
+      ? `<ul class="issues-list">${page.issues.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`
+      : '<div class="no-issues">✓ No issues</div>';
+
+    return `
+      <div class="card">
+        <div class="page-card-header">
+          <div class="page-name">${esc(page.name)}</div>
+          <div class="page-badges">${storeBadge}${statusBadge}</div>
+        </div>
+        <div class="page-meta">
+          <span>Template: ${esc(page.template)}</span>
+          <span>${page.sections} sections</span>
+        </div>
+        <div class="page-buttons">
+          <a href="${esc(page.live_url)}" target="_blank" class="btn btn-primary btn-sm">View Live Page →</a>
+          <a href="${esc(page.admin_url)}" target="_blank" class="btn btn-secondary btn-sm">Open in Shopify →</a>
+        </div>
+        ${issuesHtml}
+      </div>`;
+  }).join('');
+}
+
+/* ===== ADS ===== */
+function renderAds() {
+  const campaigns = [...new Set(DATA.ads.map(a => a.campaign))];
+  const counts = {};
+  campaigns.forEach(c => { counts[c] = DATA.ads.filter(a => a.campaign === c).length; });
+
+  // Build destination URL map from pages
+  const destUrlMap = {};
+  DATA.pages.forEach(p => { destUrlMap[p.name] = p.live_url; });
+
+  document.getElementById('adsSubtitle').textContent =
+    `${DATA.ads.length} ads across ${campaigns.length} campaigns`;
+
+  // Filter tabs
+  const tabsEl = document.getElementById('adsFilterTabs');
+  tabsEl.innerHTML = `<button class="filter-tab active" data-filter="all">All (${DATA.ads.length})</button>` +
+    campaigns.map(c => `<button class="filter-tab" data-filter="${esc(c)}">${esc(c)} (${counts[c]})</button>`).join('');
+
+  tabsEl.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabsEl.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterAds(btn.dataset.filter);
+    });
+  });
+
+  renderAdCards(DATA.ads, destUrlMap);
+}
+
+function renderAdCards(ads, destUrlMap) {
+  const list = document.getElementById('adsList');
+  const campaignColors = {
+    'Mechanism': 'badge-purple',
+    'Ranking': 'badge-blue',
+    'Authority': 'badge-green',
+    'Retargeting': 'badge-orange'
+  };
+
+  // Build destination URL map if not passed
+  if (!destUrlMap) {
+    destUrlMap = {};
+    DATA.pages.forEach(p => { destUrlMap[p.name] = p.live_url; });
+  }
+
+  list.innerHTML = ads.map(ad => {
+    const campBadge = `<span class="badge ${campaignColors[ad.campaign] || 'badge-gray'}">${esc(ad.campaign)}</span>`;
+    const hookTypeBadge = ad.hook_type
+      ? `<span class="badge badge-gray">${esc(ad.hook_type)}</span>`
+      : '';
+
+    const destUrl = destUrlMap[ad.destination] || '#';
+    const destLink = `<a href="${esc(destUrl)}" target="_blank">${esc(ad.destination)}</a>`;
+
+    return `
+      <div class="card ad-card" data-campaign="${esc(ad.campaign)}">
+        <div class="ad-card-top">
+          ${campBadge}
+          <span class="ad-number">Ad #${ad.id}</span>
+          ${hookTypeBadge}
+        </div>
+        ${ad.image_url ? `<div class="ad-image"><img src="${esc(ad.image_url)}" loading="lazy" alt="${esc(ad.angle)}" /></div>` : ''}
+        <div class="ad-hook">${esc(ad.hook)}</div>
+        <div class="ad-angle">${esc(ad.angle)}</div>
+        <div class="ad-destination">→ ${destLink}</div>
+        <button class="ad-expand-toggle" onclick="toggleAdBody(this)">Show full copy ▼</button>
+        <div class="ad-body-wrap">
+          <div class="ad-body">
+            <button class="copy-btn" onclick="copyText(this, ${ad.id})">Copy</button>
+            ${esc(ad.body)}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterAds(filter) {
+  const cards = document.querySelectorAll('.ad-card');
+  cards.forEach(card => {
+    if (filter === 'all' || card.dataset.campaign === filter) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+function toggleAdBody(btn) {
+  const wrap = btn.nextElementSibling;
+  const expanded = wrap.classList.toggle('expanded');
+  btn.textContent = expanded ? 'Hide full copy ▲' : 'Show full copy ▼';
+}
+
+function copyText(btn, adId) {
+  const ad = DATA.ads.find(a => a.id === adId);
+  if (!ad) return;
+  navigator.clipboard.writeText(ad.body).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+/* ===== IMAGES ===== */
+function renderImages() {
+  const categories = [...new Set(DATA.images.map(i => i.category))];
+  const counts = {};
+  categories.forEach(c => { counts[c] = DATA.images.filter(i => i.category === c).length; });
+
+  document.getElementById('imagesSubtitle').textContent =
+    `${DATA.images.length} images across ${categories.length} categories`;
+
+  // Filter tabs
+  const tabsEl = document.getElementById('imagesFilterTabs');
+  tabsEl.innerHTML = `<button class="filter-tab active" data-filter="all">All (${DATA.images.length})</button>` +
+    categories.map(c => `<button class="filter-tab" data-filter="${esc(c)}">${esc(c)} (${counts[c]})</button>`).join('');
+
+  tabsEl.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabsEl.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterImages(btn.dataset.filter);
+    });
+  });
+
+  const grid = document.getElementById('imagesGrid');
+  grid.innerHTML = DATA.images.map(img => {
+    const displayName = img.name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const catColor = {
+      'pdp': 'badge-purple',
+      'top5': 'badge-blue',
+      '7reasons': 'badge-green',
+      'creative': 'badge-orange',
+      'news': 'badge-yellow'
+    }[img.category] || 'badge-gray';
+
+    return `
+      <div class="image-card" data-category="${esc(img.category)}">
+        <img class="image-thumb" src="${esc(img.cdn_url)}" alt="${esc(displayName)}" loading="lazy"
+             onclick="openLightbox('${esc(img.cdn_url)}')">
+        <div class="image-info">
+          <div class="image-name">${esc(displayName)}</div>
+          <div class="image-actions">
+            <span class="badge ${catColor}">${esc(img.category)}</span>
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); copyUrl(this, '${esc(img.cdn_url)}')">Copy URL</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterImages(filter) {
+  document.querySelectorAll('.image-card').forEach(card => {
+    card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+  });
+}
+
+function copyUrl(btn, url) {
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+
+/* ===== LIGHTBOX ===== */
+function openLightbox(url) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightboxImg').src = url;
+  lb.classList.add('active');
+}
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  if (e.target === this) closeLightbox();
+});
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.getElementById('lightboxImg').src = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+/* ===== TODO ===== */
+
+function updateTodoSummary() {
+  if (!DATA) return;
+  const total = DATA.todo.length;
+  const remaining = DATA.todo.filter(t => !todoDone[t.id]).length;
+  document.getElementById('todoSummary').innerHTML =
+    `<strong>${remaining}</strong> of <strong>${total}</strong> tasks remaining`;
+}
+
+/* ===== NAVIGATION ===== */
+function setupNav() {
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => switchTab(item.dataset.tab));
+  });
+  // Hamburger
+  
+  document.getElementById('sidebarOverlay').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+  });
+}
+
+function switchTab(tab) {
+  // Nav items
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-tab="${tab}"]`)?.classList.add('active');
+  // Tab content
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(`tab-${tab}`);
+  if (el) el.classList.add('active');
+  // Hash
+  history.replaceState(null, '', `#${tab}`);
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+function setupHash() {
+  const hash = location.hash.replace('#', '') || 'pages';
+  switchTab(hash);
+  window.addEventListener('hashchange', () => {
+    switchTab(location.hash.replace('#', '') || 'pages');
+  });
+}
+
+
+/* ===== AD REVIEW ===== */
+function saveAdReview() {
+  localStorage.setItem(AD_REVIEW_KEY, JSON.stringify(adReviewData));
+}
+
+
+function esc(str) {
+  if (str == null) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+/* ===== PAGE IMAGE REVIEWS ===== */
+function renderPageImageReview() {
+  const imgs = DATA.image_review || [];
+  if (imgs.length === 0) {
+    document.getElementById('pageReviewSubtitle').textContent = 'No images to review';
+    document.getElementById('pageReviewContent').innerHTML = '<div class="review-all-done"><span class="emoji">📭</span>No page image data</div>';
+    return;
+  }
+
+  const reviewed = imgs.filter(img => pageReviewData[img.id] && pageReviewData[img.id].decision).length;
+  const total = imgs.length;
+  const pct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
+  document.getElementById('pageReviewSubtitle').textContent = (total - reviewed) + ' images awaiting review';
+  document.getElementById('pageReviewProgressText').innerHTML = '<strong>' + reviewed + '</strong> of <strong>' + total + '</strong> reviewed';
+  document.getElementById('pageReviewProgressFill').style.width = pct + '%';
+
+  const unreviewed = imgs.filter(img => !(pageReviewData[img.id] && pageReviewData[img.id].decision));
+  if (unreviewed.length === 0) {
+    document.getElementById('pageReviewContent').innerHTML = '<div class="review-all-done"><span class="emoji">🎉</span>All page images reviewed!</div>';
+    updatePageReviewBadge();
+    return;
+  }
+
+  const batchStart = pageReviewBatch * 3;
+  const batch = unreviewed.slice(batchStart, batchStart + 3);
+  if (batch.length === 0 && batchStart > 0) { pageReviewBatch = 0; renderPageImageReview(); return; }
+
+  const catColors = { pdp: 'badge-purple', top5: 'badge-blue', '7reasons': 'badge-green', creative: 'badge-orange', news: 'badge-yellow' };
+
+  let html = '<div class="review-batch-grid">';
+  batch.forEach(img => {
+    const existing = pageReviewData[img.id] || {};
+    html += '<div class="review-batch-card">' +
+      '<div class="review-img-wrap"><img src="' + esc(img.cdn_url) + '" loading="lazy" alt="' + esc(img.name) + '" onclick="openLightbox(this.src)" /></div>' +
+      '<div class="review-card-body">' +
+        '<div class="review-card-title">' + esc(img.name) + '</div>' +
+        '<span class="badge ' + (catColors[img.category] || 'badge-gray') + '">' + esc(img.category) + '</span>' +
+        '<div class="review-actions">' +
+          '<button class="review-btn approve' + (existing.decision === 'approved' ? ' active' : '') + '" onclick="pageReviewDecide(' + img.id + ',&quot;approved&quot;)">✅ Approve</button>' +
+          '<button class="review-btn reject' + (existing.decision === 'rejected' ? ' active' : '') + '" onclick="pageReviewDecide(' + img.id + ',&quot;rejected&quot;)">❌ Reject</button>' +
+        '</div>' +
+        '<textarea class="review-comment" placeholder="Why is this good/bad?" onchange="pageReviewComment(' + img.id + ',this.value)">' + esc(existing.comment || '') + '</textarea>' +
+      '</div></div>';
+  });
+  html += '</div>';
+
+  const allDecided = batch.every(img => pageReviewData[img.id] && pageReviewData[img.id].decision);
+  const remaining = unreviewed.length - batch.length;
+  html += '<div class="review-batch-nav">' +
+    '<button class="review-nav-btn" onclick="pageReviewBatch++;renderPageImageReview()" ' + (allDecided && remaining > 0 ? '' : 'disabled') + '>' +
+    (allDecided && remaining > 0 ? 'Next Batch → (' + remaining + ' remaining)' : 'Make all decisions to continue') +
+    '</button></div>';
+
+  document.getElementById('pageReviewContent').innerHTML = html;
+  updatePageReviewBadge();
+}
+
+function pageReviewDecide(id, decision) {
+  if (!pageReviewData[id]) pageReviewData[id] = {};
+  pageReviewData[id].decision = decision;
+  localStorage.setItem(PAGE_REVIEW_KEY, JSON.stringify(pageReviewData));
+  renderPageImageReview();
+}
+
+function pageReviewComment(id, comment) {
+  if (!pageReviewData[id]) pageReviewData[id] = {};
+  pageReviewData[id].comment = comment;
+  localStorage.setItem(PAGE_REVIEW_KEY, JSON.stringify(pageReviewData));
+}
+
+function updatePageReviewBadge() {
+  const imgs = DATA.image_review || [];
+  const remaining = imgs.filter(img => !(pageReviewData[img.id] && pageReviewData[img.id].decision)).length;
+  document.getElementById('navBadgePageReview').textContent = remaining;
+}
+
+/* ===== AD IMAGE REVIEWS ===== */
+function renderAdImageReview() {
+  if (!DATA || !DATA.ads || DATA.ads.length === 0) {
+    document.getElementById('adImageReviewSubtitle').textContent = 'No ads to review';
+    document.getElementById('adImageReviewContent').innerHTML = '<div class="review-all-done"><span class="emoji">📭</span>No ad data</div>';
+    return;
+  }
+
+  const total = DATA.ads.length;
+  const reviewed = DATA.ads.filter(a => {
+    const d = adImageReviewData[a.id];
+    return d && d.image && d.copy;
+  }).length;
+  const pct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
+  document.getElementById('adImageReviewSubtitle').textContent = (total - reviewed) + ' ads awaiting review';
+  document.getElementById('adImageReviewProgressText').innerHTML = '<strong>' + reviewed + '</strong> of <strong>' + total + '</strong> reviewed';
+  document.getElementById('adImageReviewProgressFill').style.width = pct + '%';
+
+  const unreviewed = DATA.ads.filter(a => { const d = adImageReviewData[a.id]; return !(d && d.image && d.copy); });
+  if (unreviewed.length === 0) {
+    document.getElementById('adImageReviewContent').innerHTML = '<div class="review-all-done"><span class="emoji">🎉</span>All ads reviewed!</div>';
+    updateAdImageReviewBadge();
+    return;
+  }
+
+  const destUrlMap = {};
+  DATA.pages.forEach(p => { destUrlMap[p.name] = p.live_url; });
+  const campColors = { Mechanism: 'badge-purple', Ranking: 'badge-blue', Authority: 'badge-green', Retargeting: 'badge-orange' };
+
+  const batchStart = adImageReviewBatch * 3;
+  const batch = unreviewed.slice(batchStart, batchStart + 3);
+  if (batch.length === 0 && batchStart > 0) { adImageReviewBatch = 0; renderAdImageReview(); return; }
+
+  let html = '<div class="review-batch-grid">';
+  batch.forEach(ad => {
+    const existing = adImageReviewData[ad.id] || {};
+    const destUrl = destUrlMap[ad.destination] || '#';
+
+    // Each ad gets one card with image on top, copy below
+    html += '<div class="review-batch-card ad-review-stack">' +
+      // Image section
+      '<div class="ad-review-image-section">' +
+        '<div class="ad-review-label">AD CREATIVE</div>' +
+        (ad.image_url ? '<div class="review-img-wrap"><img src="' + esc(ad.image_url) + '" loading="lazy" alt="' + esc(ad.angle) + '" onclick="openLightbox(this.src)" /></div>' : '<div class="review-img-placeholder">No image</div>') +
+        '<div class="review-actions">' +
+          '<button class="review-btn approve' + (existing.image === 'approved' ? ' active' : '') + '" onclick="adImageDecide(' + ad.id + ',&quot;image&quot;,&quot;approved&quot;)">Image ✅</button>' +
+          '<button class="review-btn reject' + (existing.image === 'rejected' ? ' active' : '') + '" onclick="adImageDecide(' + ad.id + ',&quot;image&quot;,&quot;rejected&quot;)">Image ❌</button>' +
+        '</div>' +
+        '<textarea class="review-comment" placeholder="Image feedback..." onchange="adImageComment(' + ad.id + ',&quot;image_comment&quot;,this.value)">' + esc(existing.image_comment || '') + '</textarea>' +
+      '</div>' +
+      // Copy section
+      '<div class="ad-review-copy-section">' +
+        '<div class="ad-review-label">AD COPY</div>' +
+        '<div class="ad-review-meta">' +
+          '<span class="badge ' + (campColors[ad.campaign] || 'badge-gray') + '">' + esc(ad.campaign) + '</span>' +
+          '<span class="ad-number">Ad #' + ad.id + '</span>' +
+          (ad.hook_type ? '<span class="badge badge-gray">' + esc(ad.hook_type) + '</span>' : '') +
+          '<div style="font-size:11px;color:#888;margin-top:4px">→ <a href="' + esc(destUrl) + '" target="_blank" style="color:var(--purple)">' + esc(ad.destination) + '</a></div>' +
+        '</div>' +
+        '<div class="ad-review-hook">' + esc(ad.hook) + '</div>' +
+        '<div class="ad-review-body">' + esc(ad.body).substring(0, 300) + (ad.body.length > 300 ? '...' : '') + '</div>' +
+        '<div class="review-actions">' +
+          '<button class="review-btn approve' + (existing.copy === 'approved' ? ' active' : '') + '" onclick="adImageDecide(' + ad.id + ',&quot;copy&quot;,&quot;approved&quot;)">Copy ✅</button>' +
+          '<button class="review-btn reject' + (existing.copy === 'rejected' ? ' active' : '') + '" onclick="adImageDecide(' + ad.id + ',&quot;copy&quot;,&quot;rejected&quot;)">Copy ❌</button>' +
+        '</div>' +
+        '<textarea class="review-comment" placeholder="Copy feedback..." onchange="adImageComment(' + ad.id + ',&quot;copy_comment&quot;,this.value)">' + esc(existing.copy_comment || '') + '</textarea>' +
+      '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  const allDecided = batch.every(ad => {
+    const d = adImageReviewData[ad.id];
+    return d && d.image && d.copy;
+  });
+  const remaining = unreviewed.length - batch.length;
+  html += '<div class="review-batch-nav">' +
+    '<button class="review-nav-btn" onclick="adImageReviewBatch++;renderAdImageReview()" ' + (allDecided && remaining > 0 ? '' : 'disabled') + '>' +
+    (allDecided && remaining > 0 ? 'Next Batch → (' + remaining + ' remaining)' : 'Make all decisions to continue') +
+    '</button></div>';
+
+  document.getElementById('adImageReviewContent').innerHTML = html;
+  updateAdImageReviewBadge();
+}
+
+function adImageDecide(id, field, decision) {
+  if (!adImageReviewData[id]) adImageReviewData[id] = {};
+  adImageReviewData[id][field] = decision;
+  localStorage.setItem(AD_IMAGE_REVIEW_KEY, JSON.stringify(adImageReviewData));
+  renderAdImageReview();
+}
+
+function adImageComment(id, field, comment) {
+  if (!adImageReviewData[id]) adImageReviewData[id] = {};
+  adImageReviewData[id][field] = comment;
+  localStorage.setItem(AD_IMAGE_REVIEW_KEY, JSON.stringify(adImageReviewData));
+}
+
+function updateAdImageReviewBadge() {
+  const remaining = DATA.ads.filter(a => { const d = adImageReviewData[a.id]; return !(d && d.image && d.copy); }).length;
+  document.getElementById('navBadgeAdReview').textContent = remaining;
+}
+
+</script>
 </body>
 </html>
