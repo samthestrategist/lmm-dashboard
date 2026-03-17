@@ -11,7 +11,6 @@
   h1 { font-size: 20px; color: #fff; margin-bottom: 4px; }
   .subtitle { font-size: 12px; color: #666; margin-bottom: 24px; }
   
-  /* Nav tabs */
   .tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; }
   .tab { padding: 8px 14px; border-radius: 6px; background: #1a1a1a; color: #888; font-size: 13px; cursor: pointer; border: 1px solid #222; }
   .tab.active { background: #222; color: #fff; border-color: #444; }
@@ -19,7 +18,6 @@
   .panel { display: none; }
   .panel.active { display: block; }
   
-  /* Stats row */
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
   .stat-card { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; }
   .stat-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
@@ -28,8 +26,8 @@
   .stat-card.green .value { color: #4ade80; }
   .stat-card.yellow .value { color: #fbbf24; }
   .stat-card.red .value { color: #f87171; }
+  .stat-card.blue .value { color: #60a5fa; }
   
-  /* Product cards */
   .product-grid { display: grid; gap: 16px; }
   .product-card { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 20px; }
   .product-card h3 { font-size: 16px; color: #fff; margin-bottom: 4px; }
@@ -38,17 +36,22 @@
   .status.live { background: #14532d; color: #4ade80; }
   .status.active { background: #422006; color: #fbbf24; }
   .status.broken { background: #450a0a; color: #f87171; }
+  .status.v2 { background: #1e1b4b; color: #818cf8; }
   
   .page-links { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
   .page-link { padding: 4px 10px; border-radius: 4px; font-size: 12px; text-decoration: none; background: #1a1a1a; border: 1px solid #222; }
   .page-link.ok { color: #4ade80; border-color: #14532d; }
+  .page-link.v2 { color: #818cf8; border-color: #312e81; }
   .page-link.broken { color: #f87171; border-color: #450a0a; }
   
   .issues { margin-top: 10px; }
   .issue { font-size: 12px; color: #f87171; padding: 2px 0; }
   .issue::before { content: "⚠️ "; }
+  .done { font-size: 12px; color: #4ade80; padding: 2px 0; }
+  .done::before { content: "✅ "; }
+  .pending { font-size: 12px; color: #fbbf24; padding: 2px 0; }
+  .pending::before { content: "⏳ "; }
   
-  /* Systems section */
   .system-card { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
   .system-card h4 { font-size: 14px; color: #fff; margin-bottom: 6px; }
   .system-card .sys-status { font-size: 12px; margin-bottom: 4px; }
@@ -56,14 +59,13 @@
   .green-text { color: #4ade80; }
   .yellow-text { color: #fbbf24; }
   .red-text { color: #f87171; }
+  .blue-text { color: #60a5fa; }
   
-  /* Knowledge section */
   .skill-list { list-style: none; }
   .skill-list li { padding: 8px 12px; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
   .skill-list .source { color: #60a5fa; font-size: 11px; }
   .skill-list .agents { color: #666; font-size: 11px; }
   
-  /* LuxeBeam section */
   .luxebeam-pages { display: grid; gap: 12px; }
   .lux-card { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px; }
   .lux-card h4 { font-size: 14px; color: #fff; margin-bottom: 8px; }
@@ -72,14 +74,24 @@
   .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-right: 4px; }
   .tag.shopify { background: #1a1a2a; color: #818cf8; }
   .tag.github { background: #1a2a1a; color: #4ade80; }
+  .tag.v2-pushed { background: #1e1b4b; color: #a78bfa; }
+  .tag.images-pending { background: #422006; color: #fbbf24; }
   .tag.ecomwize-clean { background: #14532d; color: #4ade80; }
   .tag.ecomwize-dirty { background: #450a0a; color: #f87171; }
   
-  /* Toolchain section */
   .tool-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 6px; padding: 12px; margin-bottom: 8px; }
   .tool-card code { color: #c9873a; font-size: 12px; }
   .tool-card .desc { font-size: 12px; color: #888; margin-top: 4px; }
   .tool-card .loc { font-size: 10px; color: #555; margin-top: 2px; }
+
+  .timeline { border-left: 2px solid #222; margin-left: 8px; padding-left: 16px; }
+  .timeline-item { margin-bottom: 12px; position: relative; }
+  .timeline-item::before { content: ""; position: absolute; left: -21px; top: 4px; width: 10px; height: 10px; border-radius: 50%; }
+  .timeline-item.done::before { background: #4ade80; }
+  .timeline-item.active::before { background: #fbbf24; }
+  .timeline-item.pending::before { background: #333; }
+  .timeline-item .time { font-size: 10px; color: #555; }
+  .timeline-item .desc { font-size: 12px; color: #ccc; }
   
   @media (max-width: 600px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
@@ -89,13 +101,14 @@
 <body>
 
 <h1>🔮 LMM Command Center</h1>
-<p class="subtitle">Little Miss Mineral — Last updated: March 12, 2026 3:30 AM PST</p>
+<p class="subtitle">Little Miss Mineral — Last updated: March 16, 2026 6:15 PM PDT</p>
 
 <div class="tabs">
   <div class="tab active" onclick="showPanel('overview')">Overview</div>
   <div class="tab" onclick="showPanel('luxebeam')">LuxeBeam</div>
   <div class="tab" onclick="showPanel('products')">All Products</div>
   <div class="tab" onclick="showPanel('systems')">Systems</div>
+  <div class="tab" onclick="showPanel('copy')">Copy System</div>
   <div class="tab" onclick="showPanel('knowledge')">Knowledge</div>
   <div class="tab" onclick="showPanel('toolchain')">Toolchain</div>
 </div>
@@ -108,10 +121,10 @@
       <div class="value">6</div>
       <div class="detail">GitHub Pages (unverified)</div>
     </div>
-    <div class="stat-card yellow">
+    <div class="stat-card blue">
       <div class="label">Pipeline Active</div>
       <div class="value">1</div>
-      <div class="detail">LuxeBeam (Shopify)</div>
+      <div class="detail">LuxeBeam — V2 copy pushed</div>
     </div>
     <div class="stat-card red">
       <div class="label">Broken</div>
@@ -121,12 +134,12 @@
     <div class="stat-card">
       <div class="label">Total Pages</div>
       <div class="value">31</div>
-      <div class="detail">26 live + 5 LuxeBeam V11</div>
+      <div class="detail">26 live + 5 LuxeBeam</div>
     </div>
     <div class="stat-card green">
-      <div class="label">Knowledge Skills</div>
-      <div class="value">18</div>
-      <div class="detail">14 high + 4 medium</div>
+      <div class="label">Copy System</div>
+      <div class="value">V2</div>
+      <div class="detail">COPY_DNA + SPAWN v6</div>
     </div>
     <div class="stat-card">
       <div class="label">Agents</div>
@@ -135,21 +148,49 @@
     </div>
   </div>
 
-  <h3 style="color:#fff; margin-bottom:12px;">🔥 Active Right Now</h3>
+  <h3 style="color:#fff; margin-bottom:12px;">📋 Today's Activity — March 16</h3>
+  <div class="timeline">
+    <div class="timeline-item done">
+      <div class="time">5:30 PM</div>
+      <div class="desc"><strong>Story page V2</strong> pushed to TBV — "The Night I Realized Skincare Had Been Lying to Me for 11 Years"</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="time">5:45 PM</div>
+      <div class="desc"><strong>Copy system updated</strong> — COPY_DNA.md created, COPY_SPAWN v6, SAM_PREFERENCES updated, COPY_LEARNINGS CF-007–014</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="time">6:06 PM</div>
+      <div class="desc"><strong>Ranking page V2</strong> pushed to TBV — "I Wasted $4,200 on Red Light Therapy Masks So You Don't Have To"</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="time">6:12 PM</div>
+      <div class="desc"><strong>Ranking deepened</strong> — Each competitor section expanded to 450-500+ words per Sam's request</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="time">6:15 PM</div>
+      <div class="desc"><strong>Authority page V2</strong> pushed to TBV — "My Dermatologist Told Me to Stop Booking LED Appointments"</div>
+    </div>
+    <div class="timeline-item active">
+      <div class="time">Now</div>
+      <div class="desc"><strong>Sam swapping images</strong> on all 3 pages in Shopify customizer</div>
+    </div>
+  </div>
+
+  <h3 style="color:#fff; margin:20px 0 12px;">🔥 Active Right Now</h3>
   <div class="system-card">
-    <h4>Sam rebuilding LuxeBeam Story page</h4>
-    <div class="sys-status yellow-text">Manual edit in progress</div>
-    <div class="sys-detail">Template: page.luxebeam-story on TBV (thebeautyverdict.com). Baseline snapshotted. diff_capture.py being built by overnight agent.</div>
+    <h4>LuxeBeam V2 Copy — All 3 Advertorials Pushed</h4>
+    <div class="sys-status green-text">✅ Story + Ranking + Authority pushed to TBV</div>
+    <div class="sys-detail">Emotion-first rewrites. Unique big ideas per page. 17/17 avatar phrases used verbatim. Sam handling image swaps.</div>
   </div>
   <div class="system-card">
-    <h4>Overnight Agent Running</h4>
-    <div class="sys-status green-text">5 tasks in progress</div>
-    <div class="sys-detail">Processing 20 DM tweets • Building diff_capture.py • Fixing Twikit • Building repair.py • Adding DM extraction</div>
+    <h4>Copy System V2 Upgrade</h4>
+    <div class="sys-status green-text">✅ Complete — all future pipelines get V2 copy</div>
+    <div class="sys-detail">COPY_DNA.md (8 principles) • COPY_SPAWN v6 • SAM_PREFERENCES updated • 14 copy learnings codified</div>
   </div>
   <div class="system-card">
-    <h4>Clean-Build Toolchain</h4>
-    <div class="sys-status green-text">✅ Complete — Mechanism page deployed</div>
-    <div class="sys-detail">Template advert-1-mar11 on LMM. 7 sections, zero hardcoded content, zero ecomwize residue.</div>
+    <h4>Shopify Image Fix</h4>
+    <div class="sys-status green-text">✅ Complete — image_picker Liquid bug fixed</div>
+    <div class="sys-detail">LMM + TBV stores: 6 sections / 17 image fixes each. All image_picker objects now use | image_url filter.</div>
   </div>
 </div>
 
@@ -157,65 +198,98 @@
 <div class="panel" id="panel-luxebeam">
   <h3 style="color:#fff; margin-bottom:16px;">LuxeBeam Red Light Therapy Mask</h3>
   
+  <div class="stats" style="margin-bottom:20px;">
+    <div class="stat-card green">
+      <div class="label">Pages Pushed</div>
+      <div class="value">4/5</div>
+      <div class="detail">Mechanism + Story + Ranking + Authority</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="label">Copy Version</div>
+      <div class="value">V2</div>
+      <div class="detail">Emotion-first, avatar-centric</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="label">Images</div>
+      <div class="value">Pending</div>
+      <div class="detail">Sam swapping in customizer</div>
+    </div>
+  </div>
+
   <div class="luxebeam-pages">
     <div class="lux-card">
       <h4>PDP</h4>
       <a class="url" href="https://littlemissmineral.com/products/luxebeam-red-light-therapy-led-face-mask" target="_blank">littlemissmineral.com/products/luxebeam-...led-face-mask</a>
-      <a class="url" href="https://samthestrategist.github.io/lmm-luxebeam-pdp/" target="_blank">GitHub: lmm-luxebeam-pdp ✅</a>
       <span class="tag shopify">Shopify LMM</span>
     </div>
 
     <div class="lux-card">
       <h4>Mechanism Advertorial</h4>
       <a class="url" href="https://littlemissmineral.com/pages/why-your-serum-cant-reach-4mm-deep" target="_blank">LMM: why-your-serum-cant-reach-4mm-deep</a>
-      <a class="url" href="https://samthestrategist.github.io/lmm-luxebeam-7-reasons-why/" target="_blank">GitHub: lmm-luxebeam-7-reasons-why ✅</a>
       <span class="tag shopify">Shopify LMM</span>
-      <span class="tag ecomwize-dirty">Ecomwize residue: 218 refs</span>
+      <span class="tag v2-pushed">Clean build deployed</span>
       <div class="meta" style="margin-top:8px;">
-        <strong style="color:#4ade80;">Clean build deployed:</strong> advert-1-mar11 (zero hardcoded, schema-first)
+        <strong style="color:#4ade80;">advert-1-mar11:</strong> 7 sections, zero hardcoded content, zero ecomwize residue
       </div>
     </div>
 
     <div class="lux-card">
-      <h4>Story Advertorial — SAM REBUILDING</h4>
+      <h4>Story Advertorial — V2 COPY PUSHED ✅</h4>
       <a class="url" href="https://thebeautyverdict.com/pages/i-replaced-my-400-skincare-routine-with-10-minutes-of-light" target="_blank">TBV: i-replaced-my-400-skincare-routine...</a>
-      <a class="url" href="https://samthestrategist.github.io/lmm-luxebeam-creative-advertorial/" target="_blank">GitHub: lmm-luxebeam-creative-advertorial ✅</a>
       <span class="tag shopify">Shopify TBV</span>
-      <span class="tag ecomwize-dirty">Ecomwize residue: 352 refs</span>
-      <div class="meta" style="margin-top:8px; color:#fbbf24;">
-        ⏳ Sam manually rebuilding. Baseline snapshotted for diff capture.
+      <span class="tag v2-pushed">V2 pushed 6:03 PM</span>
+      <span class="tag images-pending">Images pending</span>
+      <div class="meta" style="margin-top:8px; color:#818cf8;">
+        Big idea: "The Night I Realized Skincare Had Been Lying to Me for 11 Years"<br>
+        Sarah's diary: frustration → bathroom floor → rabbit hole → shopping disaster → discovery → transformation (219 days)
       </div>
     </div>
 
     <div class="lux-card">
-      <h4>Top 5 Ranking</h4>
+      <h4>Top 5 Ranking — V2 COPY PUSHED ✅</h4>
       <a class="url" href="https://thebeautyverdict.com/pages/best-red-light-therapy-masks-2026" target="_blank">TBV: best-red-light-therapy-masks-2026</a>
-      <a class="url" href="https://samthestrategist.github.io/lmm-luxebeam-top5-ranking/" target="_blank">GitHub: lmm-luxebeam-top5-ranking ✅</a>
       <span class="tag shopify">Shopify TBV</span>
+      <span class="tag v2-pushed">V2 pushed 6:12 PM (deepened)</span>
+      <span class="tag images-pending">Images pending</span>
+      <div class="meta" style="margin-top:8px; color:#818cf8;">
+        Big idea: "I Wasted $4,200 on Red Light Therapy Masks So You Don't Have To"<br>
+        Each competitor = personal disappointment story (450-500+ words each). LuxeBeam earned at #1.
+      </div>
     </div>
 
     <div class="lux-card">
-      <h4>Authority Advertorial</h4>
+      <h4>Authority Advertorial — V2 COPY PUSHED ✅</h4>
       <a class="url" href="https://thebeautyverdict.com/pages/dermatologists-are-ditching-clinics-for-this-249-device" target="_blank">TBV: dermatologists-are-ditching...</a>
-      <a class="url" href="https://samthestrategist.github.io/lmm-luxebeam-news-advertorial/" target="_blank">GitHub: lmm-luxebeam-news-advertorial ✅</a>
       <span class="tag shopify">Shopify TBV</span>
+      <span class="tag v2-pushed">V2 pushed 6:15 PM</span>
+      <span class="tag images-pending">Images pending</span>
+      <div class="meta" style="margin-top:8px; color:#818cf8;">
+        Big idea: "My Dermatologist Told Me to Stop Booking LED Appointments"<br>
+        Lauren's derm hands her money back. $13,200 clinic math. Water filter + garden watering analogies. 12 reviews.
+      </div>
     </div>
   </div>
 
-  <h3 style="color:#fff; margin:20px 0 12px;">Copy Viewer</h3>
+  <h3 style="color:#fff; margin:20px 0 12px;">V2 Copy Files</h3>
   <div class="lux-card">
-    <a class="url" href="https://samthestrategist.github.io/luxebeam-copy-viewer/" target="_blank">luxebeam-copy-viewer — All 4 advertorials formatted</a>
-    <div class="meta">Mechanism | Story | Ranking | Authority — with section labels</div>
+    <div class="meta">
+      <code>pipeline/active/luxebeam/copy/STORY_REWRITE_V2.md</code> — 3,600 words<br>
+      <code>pipeline/active/luxebeam/copy/RANKING_REWRITE_V2.md</code> — 2,800 words (deepened on Shopify)<br>
+      <code>pipeline/active/luxebeam/copy/AUTHORITY_REWRITE_V2.md</code> — 4,600 words<br>
+      <code>pipeline/active/luxebeam/copy/pdp-v2-rewrite.md</code> — PDP rewrite
+    </div>
   </div>
 
-  <h3 style="color:#fff; margin:20px 0 12px;">Open Issues</h3>
+  <h3 style="color:#fff; margin:20px 0 12px;">Remaining Issues</h3>
   <div class="issues">
-    <div class="issue">Ecomwize URLs in Liquid HTML (218-352 refs per page)</div>
-    <div class="issue">NASA fake logo on mechanism page (4 refs)</div>
-    <div class="issue">Same image duplicated 10-28x per page</div>
-    <div class="issue">AI-hallucinated competitor mask images</div>
-    <div class="issue">Wrong LuxeBeam product design in generated images</div>
-    <div class="issue">Settings added but hardcoded fallbacks remain (root cause)</div>
+    <div class="issue">Images need swapping on all 3 V2 pages (Sam handling)</div>
+    <div class="issue">Ecomwize URLs still in Liquid HTML on Story/Ranking/Authority (218-352 refs)</div>
+    <div class="issue">Same placeholder image duplicated across sections</div>
+  </div>
+  <div style="margin-top:8px;">
+    <div class="done">V2 copy pushed to all 3 advertorial pages</div>
+    <div class="done">image_picker Liquid bug fixed on both stores</div>
+    <div class="done">Mechanism page clean-built (zero residue)</div>
   </div>
 </div>
 
@@ -223,73 +297,62 @@
 <div class="panel" id="panel-products">
   <div class="product-grid">
     <div class="product-card">
-      <span class="status active">PIPELINE ACTIVE</span>
+      <span class="status v2">V2 COPY LIVE</span>
       <h3>LuxeBeam Red Light Therapy Mask</h3>
       <div class="slug">red-light-mask / luxebeam</div>
       <div class="page-links">
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-luxebeam-pdp/" target="_blank">PDP ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-luxebeam-top5-ranking/" target="_blank">Ranking ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-luxebeam-7-reasons-why/" target="_blank">7 Reasons ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-luxebeam-creative-advertorial/" target="_blank">Creative ✅</a>
-        <a class="page-link ok" href="https://samthestrategist.github.io/lmm-luxebeam-news-advertorial/" target="_blank">News ✅</a>
+        <a class="page-link ok" href="https://littlemissmineral.com/products/luxebeam-red-light-therapy-led-face-mask" target="_blank">PDP ✅</a>
+        <a class="page-link ok" href="https://littlemissmineral.com/pages/why-your-serum-cant-reach-4mm-deep" target="_blank">Mechanism ✅</a>
+        <a class="page-link v2" href="https://thebeautyverdict.com/pages/i-replaced-my-400-skincare-routine-with-10-minutes-of-light" target="_blank">Story V2</a>
+        <a class="page-link v2" href="https://thebeautyverdict.com/pages/best-red-light-therapy-masks-2026" target="_blank">Ranking V2</a>
+        <a class="page-link v2" href="https://thebeautyverdict.com/pages/dermatologists-are-ditching-clinics-for-this-249-device" target="_blank">Authority V2</a>
       </div>
-      <div class="issues">
-        <div class="issue">Shopify pages have ecomwize residue</div>
-        <div class="issue">Sam rebuilding Story page manually</div>
+      <div style="margin-top:8px;">
+        <div class="pending">Images pending on 3 V2 pages</div>
       </div>
     </div>
 
     <div class="product-card">
       <span class="status live">LIVE</span>
       <h3>Glow Reset Mask</h3>
-      <div class="slug">glow-reset-mask • Shopify: 8908368085147</div>
+      <div class="slug">glow-reset-mask</div>
       <div class="page-links">
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-glow-reset-mask-pdp/" target="_blank">PDP ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-glow-reset-mask-advertorial/" target="_blank">Advert ✅</a>
-      </div>
-      <div class="issues">
-        <div class="issue">No ranking page</div>
-        <div class="issue">Source code has v1 images</div>
       </div>
     </div>
 
     <div class="product-card">
       <span class="status live">LIVE</span>
       <h3>Centella Restore Cream</h3>
-      <div class="slug">centella-restore-cream • Shopify: 8908672401563</div>
+      <div class="slug">centella-restore-cream</div>
       <div class="page-links">
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-centella-restore-cream-pdp/" target="_blank">PDP ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-centella-restore-cream-advertorial/" target="_blank">Advert ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-centella-restore-cream-ranking/" target="_blank">Ranking ✅</a>
       </div>
-      <div class="issues"><div class="issue">Source code has old crc-* images</div></div>
     </div>
 
     <div class="product-card">
       <span class="status live">LIVE</span>
       <h3>Lift Reset Cream</h3>
-      <div class="slug">lift-reset-cream • Shopify: 8908713787547</div>
+      <div class="slug">lift-reset-cream</div>
       <div class="page-links">
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-lift-reset-cream-pdp/" target="_blank">PDP ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-lift-reset-cream-advertorial/" target="_blank">Advert ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-lift-reset-cream-ranking/" target="_blank">Ranking ✅</a>
-      </div>
-      <div class="issues">
-        <div class="issue">Images never Sam-approved</div>
-        <div class="issue">Checkout variants need lookup</div>
       </div>
     </div>
 
     <div class="product-card">
       <span class="status live">LIVE</span>
       <h3>Pure Himalayan Shilajit</h3>
-      <div class="slug">pure-himalayan-shilajit • Shopify: 8911585837211</div>
+      <div class="slug">pure-himalayan-shilajit</div>
       <div class="page-links">
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-pure-himalayan-shilajit-pdp/" target="_blank">PDP ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-pure-himalayan-shilajit-advertorial/" target="_blank">Advert ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-pure-himalayan-shilajit-ranking/" target="_blank">Ranking ✅</a>
       </div>
-      <div class="issues"><div class="issue">Images never Sam-approved</div></div>
     </div>
 
     <div class="product-card">
@@ -301,7 +364,6 @@
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-mind-bloom-mushroom-gummies-advertorial/" target="_blank">Advert ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-mind-bloom-mushroom-gummies-ranking/" target="_blank">Ranking ✅</a>
       </div>
-      <div class="issues"><div class="issue">6-jar missing from page CTAs</div></div>
     </div>
 
     <div class="product-card">
@@ -313,7 +375,6 @@
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-balance-tracker-advertorial/" target="_blank">Advert ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-balance-tracker-ranking/" target="_blank">Ranking ✅</a>
       </div>
-      <div class="issues"><div class="issue">Duplicate repos exist</div></div>
     </div>
 
     <div class="product-card">
@@ -326,10 +387,7 @@
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-menopause-belly-5reasons/" target="_blank">5 Reasons ✅</a>
       </div>
       <div class="issues">
-        <div class="issue">Static HTML not React</div>
-        <div class="issue">No CDN images</div>
-        <div class="issue">No SECRET25</div>
-        <div class="issue">Needs full rebuild</div>
+        <div class="issue">Static HTML, no CDN images, no SECRET25. Needs full rebuild.</div>
       </div>
     </div>
 
@@ -342,10 +400,7 @@
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-perimenopause-top5/" target="_blank">Top5 ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-perimenopause-5reasons/" target="_blank">5 Reasons ✅</a>
       </div>
-      <div class="issues">
-        <div class="issue">Static HTML not React</div>
-        <div class="issue">Needs full rebuild</div>
-      </div>
+      <div class="issues"><div class="issue">Static HTML. Needs full rebuild.</div></div>
     </div>
 
     <div class="product-card">
@@ -357,11 +412,7 @@
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-crepey-skin-top5/" target="_blank">Top5 ✅</a>
         <a class="page-link ok" href="https://samthestrategist.github.io/lmm-crepey-skin-5reasons/" target="_blank">5 Reasons ✅</a>
       </div>
-      <div class="issues">
-        <div class="issue">0 Shopify product images</div>
-        <div class="issue">No SECRET25</div>
-        <div class="issue">Needs full rebuild</div>
-      </div>
+      <div class="issues"><div class="issue">0 Shopify images, no SECRET25. Needs full rebuild.</div></div>
     </div>
   </div>
 </div>
@@ -374,68 +425,120 @@
     <h4>🏗️ Pipeline Engine</h4>
     <div class="sys-status green-text">✅ Operational</div>
     <div class="sys-detail">launch.sh → Phase 0 (design-intel) → Phase 1 (research) → Phase 2 (copy) → Phase 3 (images+shopify) → Phase 4 (build+qa)</div>
-    <div class="sys-detail">Location: ~/.openclaw/scripts/launch.sh</div>
   </div>
 
   <div class="system-card">
-    <h4>🧠 Knowledge Acquisition Engine</h4>
-    <div class="sys-status yellow-text">⚠️ Partially broken</div>
-    <div class="sys-detail">18 skill files • SQLite + FTS5 • Bookmark extraction ✅ • Single tweet broken (Twikit itemContent) • DM extraction being built</div>
-    <div class="sys-detail">Location: ~/.openclaw/knowledge/</div>
+    <h4>✍️ Copy System V2</h4>
+    <div class="sys-status green-text">✅ Upgraded March 16</div>
+    <div class="sys-detail">COPY_DNA.md (8 principles) • COPY_SPAWN v6 • SAM_PREFERENCES updated • 14 learnings (CF-001 to CF-014) • Emotion-first architecture</div>
+  </div>
+
+  <div class="system-card">
+    <h4>🛒 Shopify Integration</h4>
+    <div class="sys-status green-text">✅ Both stores connected</div>
+    <div class="sys-detail">LMM: orthocliner.myshopify.com • TBV: the-beauty-verdict.myshopify.com (token auto-refreshes every 12h)</div>
   </div>
 
   <div class="system-card">
     <h4>🔧 Clean-Build Toolchain</h4>
     <div class="sys-status green-text">✅ Complete — Tested on Mechanism page</div>
     <div class="sys-detail">blueprint_extract.py • section_build.py • template_assemble.py • Zero hardcoded content architecture</div>
-    <div class="sys-detail">Location: ~/.openclaw/tools/clean-build/</div>
   </div>
 
   <div class="system-card">
-    <h4>🔄 Template Swap System</h4>
-    <div class="sys-status red-text">❌ Deprecated — replaced by Clean-Build</div>
-    <div class="sys-detail">Was the root cause of ecomwize residue + hardcoded copy. 10-gate process that modified HTML instead of building clean.</div>
-    <div class="sys-detail">Location: ~/.openclaw/converters/template-swap/</div>
-  </div>
-
-  <div class="system-card">
-    <h4>🛒 Shopify Integration</h4>
-    <div class="sys-status green-text">✅ Both stores connected</div>
-    <div class="sys-detail">LMM: orthocliner.myshopify.com (token active) • TBV: the-beauty-verdict.myshopify.com (token auto-refreshes)</div>
-  </div>
-
-  <div class="system-card">
-    <h4>📊 Ad Intelligence (ScrapeCreators)</h4>
+    <h4>📊 Ad Intelligence</h4>
     <div class="sys-status green-text">✅ Operational</div>
     <div class="sys-detail">767 ads analyzed for LuxeBeam • 3 layers • 28 keywords • 8 brands • Copy patterns + transferable patterns extracted</div>
-    <div class="sys-detail">Location: ~/.openclaw/agents/ad-intel/</div>
-  </div>
-
-  <div class="system-card">
-    <h4>🎨 Image Generation</h4>
-    <div class="sys-status yellow-text">⚠️ Needs work</div>
-    <div class="sys-detail">Nano Banana Pro for image gen. AI hallucination issues on product design. Sam handling manually for LuxeBeam.</div>
-  </div>
-
-  <div class="system-card">
-    <h4>🔍 Funnel Intelligence</h4>
-    <div class="sys-status yellow-text">⚠️ V2 architecture planned</div>
-    <div class="sys-detail">Video intel, URL decomposition, design decision engine. V2 architecture doc exists but not fully built.</div>
-    <div class="sys-detail">Location: ~/.openclaw/funnel-intelligence/</div>
   </div>
 
   <div class="system-card">
     <h4>📝 Memory System</h4>
     <div class="sys-status green-text">✅ Operational</div>
-    <div class="sys-detail">memory-index (SQLite FTS5) • PRODUCT_HISTORY per agent • AGENT_MEMORY per agent • SAM_PREFERENCES • LEARNED_RULES</div>
-    <div class="sys-detail">Location: ~/.openclaw/scripts/memory-index/</div>
+    <div class="sys-detail">memory-index (SQLite FTS5) • PRODUCT_HISTORY • AGENT_MEMORY • SAM_PREFERENCES • LEARNED_RULES • COPY_LEARNINGS</div>
   </div>
 
   <div class="system-card">
-    <h4>⚡ Converters</h4>
-    <div class="sys-status green-text">✅ 3 converters available</div>
-    <div class="sys-detail">shopify-liquid • funnelish • template-swap (deprecated) • AlphaUra EcomWize</div>
-    <div class="sys-detail">Location: ~/.openclaw/converters/</div>
+    <h4>🎨 Image Generation</h4>
+    <div class="sys-status yellow-text">⚠️ Sam handling manually</div>
+    <div class="sys-detail">Nano Banana Pro available. AI hallucination on product design. Sam swapping images in Shopify customizer.</div>
+  </div>
+
+  <div class="system-card">
+    <h4>🧠 Knowledge Acquisition Engine</h4>
+    <div class="sys-status yellow-text">⚠️ Partially operational</div>
+    <div class="sys-detail">18 skill files • SQLite + FTS5 • Bookmark extraction ✅ • Single tweet partially broken</div>
+  </div>
+</div>
+
+<!-- ========== COPY SYSTEM ========== -->
+<div class="panel" id="panel-copy">
+  <h3 style="color:#fff; margin-bottom:16px;">Copy System V2 — Updated March 16</h3>
+
+  <div class="stats" style="margin-bottom:20px;">
+    <div class="stat-card green">
+      <div class="label">Copy Version</div>
+      <div class="value">V2</div>
+      <div class="detail">Emotion-first architecture</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Learnings</div>
+      <div class="value">14</div>
+      <div class="detail">CF-001 through CF-014</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Spawn Version</div>
+      <div class="value">v6</div>
+      <div class="detail">COPY_DNA integrated</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="label">Fix Proposals</div>
+      <div class="value">4</div>
+      <div class="detail">Pending Sam review</div>
+    </div>
+  </div>
+
+  <h4 style="color:#aaa; margin-bottom:8px;">V2 Files (new)</h4>
+  <div class="system-card">
+    <h4>COPY_DNA.md</h4>
+    <div class="sys-status green-text">✅ Created March 16</div>
+    <div class="sys-detail">8 non-negotiable principles: emotion-first arc, avatar language verbatim (50%+), no em dashes, story-first product-last, analogy-first, competitor teardown via shopping journey, transformation timeline, unique big idea per page</div>
+  </div>
+  <div class="system-card">
+    <h4>COPY_SPAWN.md v6</h4>
+    <div class="sys-status green-text">✅ Updated March 16</div>
+    <div class="sys-detail">COPY_DNA is now Read First #0. V2 rules block inserted before all output instructions. v5 archived.</div>
+  </div>
+  <div class="system-card">
+    <h4>SAM_PREFERENCES.md</h4>
+    <div class="sys-status green-text">✅ Updated March 16</div>
+    <div class="sys-detail">V2 approvals added: emotion-first arc, avatar-centric big ideas, story-as-proof structure. V1 rejections logged.</div>
+  </div>
+  <div class="system-card">
+    <h4>COPY_LEARNINGS.md</h4>
+    <div class="sys-status green-text">✅ 14 rules (CF-001 to CF-014)</div>
+    <div class="sys-detail">Latest: CF-007 (emotion-first), CF-008 (no em dashes), CF-009 (analogy-first), CF-010 (competitor via shopping journey), CF-011 (verbatim avatar language), CF-012 (transformation timeline), CF-013 (unique big idea per page), CF-014 (product name buried)</div>
+  </div>
+
+  <h4 style="color:#aaa; margin:16px 0 8px;">Pending Fix Proposals (Sam to review)</h4>
+  <div class="system-card">
+    <h4>FIX_01: Format vs. Craft</h4>
+    <div class="sys-status yellow-text">⏳ Pending review</div>
+    <div class="sys-detail">Split COPY_SPAWN into Phase A (Think → COPY_STRATEGY.md) + Phase B (Execute → STRUCTURED_COPY.md). Cost: ~$0.15-0.30/pipeline.</div>
+  </div>
+  <div class="system-card">
+    <h4>FIX_04: Zero Feedback Data</h4>
+    <div class="sys-status yellow-text">⏳ Pending review</div>
+    <div class="sys-detail">3 feedback loops: Copy Diff, Image Gen, Conversation Feedback.</div>
+  </div>
+  <div class="system-card">
+    <h4>FIX_05: Mechanism Page Framework</h4>
+    <div class="sys-status yellow-text">⏳ Pending review</div>
+    <div class="sys-detail">Page playbooks for 5 page types with 10-section structure.</div>
+  </div>
+  <div class="system-card">
+    <h4>FIX_07: Sam Calibration</h4>
+    <div class="sys-status yellow-text">⏳ Pending review</div>
+    <div class="sys-detail">SAMS_COPY_DNA.md, CALIBRATION_EXAMPLES.md, scoring rubric (6 dimensions, min 7.0 avg). Cost: ~$0.80 one-time + $0.20/pipeline.</div>
   </div>
 </div>
 
@@ -447,7 +550,6 @@
     <div class="stat-card green"><div class="label">Skills</div><div class="value">18</div></div>
     <div class="stat-card"><div class="label">Sources</div><div class="value">30</div></div>
     <div class="stat-card"><div class="label">Categories</div><div class="value">5</div></div>
-    <div class="stat-card yellow"><div class="label">New DM Tweets</div><div class="value">20</div><div class="detail">Processing overnight</div></div>
   </div>
 
   <h4 style="color:#aaa; margin-bottom:8px;">Active Skills (mapped to agents)</h4>
@@ -477,16 +579,17 @@
   <div class="tool-card"><code>blueprint_extract.py</code><div class="desc">Extracts CSS/layout from EcomWize templates → blueprint JSON (zero content)</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
   <div class="tool-card"><code>section_build.py</code><div class="desc">Blueprint + copy → clean .liquid section with full schema</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
   <div class="tool-card"><code>template_assemble.py</code><div class="desc">All sections → page template JSON with settings populated from copy</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
-
-  <h4 style="color:#aaa; margin:16px 0 8px;">Being Built Overnight ⏳</h4>
   <div class="tool-card"><code>diff_capture.py</code><div class="desc">Captures Sam's manual edits by diffing live vs baseline snapshots</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
-  <div class="tool-card"><code>page_state_gen.py</code><div class="desc">Generates PAGE_STATE.json tracking every element's source and status</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
-  <div class="tool-card"><code>repair.py</code><div class="desc">Targeted single-field fixes via Shopify Asset API, never touches HTML</div><div class="loc">~/.openclaw/tools/clean-build/</div></div>
 
   <h4 style="color:#aaa; margin:16px 0 8px;">Pipeline Scripts</h4>
   <div class="tool-card"><code>launch.sh</code><div class="desc">Main pipeline launcher — Phase 0→4 with state management</div><div class="loc">~/.openclaw/scripts/</div></div>
-  <div class="tool-card"><code>knowledge.py</code><div class="desc">Knowledge Engine CLI — ingest, bookmarks, search, brief, status</div><div class="loc">~/.openclaw/knowledge/</div></div>
-  <div class="tool-card"><code>refresh-tbv-token.sh</code><div class="desc">Auto-refreshes TBV Shopify token via OAuth (cron)</div><div class="loc">~/.openclaw/workspace-orchestrator/scripts/</div></div>
+  <div class="tool-card"><code>refresh-tbv-token.sh</code><div class="desc">Auto-refreshes TBV Shopify token via OAuth (cron every 12h)</div><div class="loc">~/.openclaw/workspace-orchestrator/scripts/</div></div>
+  <div class="tool-card"><code>inject-memory.sh</code><div class="desc">Injects agent memory block into spawn prompts</div><div class="loc">~/.openclaw/scripts/</div></div>
+
+  <h4 style="color:#aaa; margin:16px 0 8px;">Copy System</h4>
+  <div class="tool-card"><code>COPY_SPAWN.md v6</code><div class="desc">Master copywriter spawn prompt. V2: COPY_DNA integrated as Read First #0.</div><div class="loc">~/.openclaw/workspace-orchestrator/prompts/</div></div>
+  <div class="tool-card"><code>COPY_DNA.md</code><div class="desc">8 non-negotiable V2 principles. Emotion-first, avatar language, no em dashes.</div><div class="loc">~/.openclaw/workspace-copywriter/knowledge/</div></div>
+  <div class="tool-card"><code>COPY_QUALITY_GATE.md</code><div class="desc">Quality gate prompt for copy validation before push.</div><div class="loc">~/.openclaw/workspace-orchestrator/prompts/</div></div>
 </div>
 
 <script>
