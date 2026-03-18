@@ -1963,7 +1963,7 @@ function renderAdImageReview() {
 
   const unreviewed = DATA.ads.filter(a => { const d = adImageReviewData[a.id]; return !(d && d.image && d.copy); });
   if (unreviewed.length === 0) {
-    document.getElementById('adImageReviewContent').innerHTML = '<div class="review-all-done"><span class="emoji">🎉</span>All ads reviewed!</div>';
+    document.getElementById('adImageReviewContent').innerHTML = '<div class="review-all-done"><span class="emoji">🎉</span>All ads reviewed!<br><button class="review-nav-btn" style="margin-top:16px;background:#16a34a;color:#fff;font-size:16px;padding:12px 32px;border:none;border-radius:8px;cursor:pointer" onclick="submitAdReviews()">📤 Submit Reviews to Bot</button><div id="submitStatus" style="margin-top:8px;font-size:13px;color:#888"></div></div>';
     updateAdImageReviewBadge();
     return;
   }
@@ -2029,6 +2029,50 @@ function updateAdImageReviewBadge() {
   document.getElementById('navBadgeAdReview').textContent = remaining;
 }
 
+
+function submitAdReviews() {
+  const statusEl = document.getElementById('submitStatus');
+  
+  // Build structured review data
+  const reviews = DATA.ads.map(ad => {
+    const d = adImageReviewData[ad.id] || {};
+    return {
+      ad_id: ad.id,
+      filename: ad.image_url ? ad.image_url.split('/').pop() : null,
+      campaign: ad.campaign,
+      angle: ad.angle,
+      hook_type: ad.hook_type,
+      hook: ad.hook,
+      body: ad.body,
+      image_url: ad.image_url,
+      image_decision: d.image || null,
+      image_comment: d.image_comment || '',
+      copy_decision: d.copy || null,
+      copy_comment: d.copy_comment || '',
+      reviewed_at: new Date().toISOString()
+    };
+  });
+  
+  const payload = {
+    batch: 'mechanism-2026-03-18',
+    submitted_at: new Date().toISOString(),
+    total: reviews.length,
+    approved_images: reviews.filter(r => r.image_decision === 'approved').length,
+    rejected_images: reviews.filter(r => r.image_decision === 'rejected').length,
+    reviews: reviews
+  };
+  
+  // Download JSON file
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ad-reviews-mechanism-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  statusEl.innerHTML = '✅ Reviews downloaded! Bot will auto-detect and process.';
+}
 </script>
 </body>
 </html>
