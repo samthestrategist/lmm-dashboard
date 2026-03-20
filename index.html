@@ -1662,24 +1662,6 @@ function toggleSidebar() {
   if (o) o.classList.toggle('active');
 }
 
-// Auto-detect new ads and reset review data for them
-(function() {
-  const key = 'lmm_ad_image_review';
-  const countKey = 'lmm_ads_count';
-  const totalAds = window.__DASHBOARD_DATA__ && window.__DASHBOARD_DATA__.ads ? window.__DASHBOARD_DATA__.ads.length : 0;
-  const lastCount = parseInt(localStorage.getItem(countKey) || '0');
-  if (totalAds > lastCount && lastCount > 0) {
-    // New ads added - clear old review data so they show up
-    const existing = JSON.parse(localStorage.getItem(key) || '{}');
-    const adIds = new Set(window.__DASHBOARD_DATA__.ads.map(a => String(a.id)));
-    // Keep reviews for ads that still exist, remove stale ones
-    const cleaned = {};
-    Object.keys(existing).forEach(k => { if (adIds.has(k)) cleaned[k] = existing[k]; });
-    localStorage.setItem(key, JSON.stringify(cleaned));
-    console.log('[Dashboard] New ads detected (' + lastCount + ' -> ' + totalAds + '). Review data preserved for existing, cleared for new.');
-  }
-  localStorage.setItem(countKey, String(totalAds));
-})();
 </script>
 <script>
 /* ===== STATE ===== */
@@ -1707,6 +1689,12 @@ const AD_IMAGE_REVIEW_KEY = 'dashboard_ad_image_review';
 
 /* ===== INIT ===== */
 (async function init() {
+  // Handle ?clear=1 to reset review data
+  if (new URLSearchParams(window.location.search).has('clear')) {
+    localStorage.removeItem('lmm_ad_image_review');
+    localStorage.removeItem('dashboard_image_review');
+    window.history.replaceState({}, '', window.location.pathname);
+  }
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) todoDone = JSON.parse(stored);
