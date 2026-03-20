@@ -1691,6 +1691,8 @@ const AD_IMAGE_REVIEW_KEY = 'dashboard_ad_image_review';
 (async function init() {
   // Handle ?clear=1 to reset review data
   if (new URLSearchParams(window.location.search).has('clear')) {
+    localStorage.removeItem('dashboard_ad_image_review');
+    localStorage.removeItem('dashboard_page_image_review');
     localStorage.removeItem('lmm_ad_image_review');
     localStorage.removeItem('dashboard_image_review');
     window.history.replaceState({}, '', window.location.pathname);
