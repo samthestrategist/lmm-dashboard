@@ -804,6 +804,18 @@ body {
 
     <!-- Ad Grid -->
     <div class="ad-grid" id="adGrid"></div>
+
+    <!-- Submit Reviews Button -->
+    <div id="submitReviewsContainer" style="text-align:center; margin: 24px 0; display:none;">
+      <button id="submitReviewsBtn" onclick="submitReviews()" style="
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white; border: none; border-radius: 12px;
+        padding: 16px 48px; font-size: 18px; font-weight: 700;
+        cursor: pointer; box-shadow: 0 4px 16px rgba(16,185,129,0.3);
+        transition: all 0.2s;
+      ">&#x2705; Submit Reviews</button>
+      <div id="submitStats" style="margin-top: 12px; color: #9ca3af; font-size: 14px;"></div>
+    </div>
   </div>
 
   <!-- AD LAUNCHER -->
@@ -892,7 +904,6 @@ body {
 /* ===== DATA ===== */
 var DATA = null;
 var META_ADS = null;
-var ADS_LAUNCHED = true; // Ads already launched on Meta
 var LAUNCH_STATE = null;
 var KNOWLEDGE = null;
 var AD_REVIEW_KEY = 'lbops_ad_review_v2';
@@ -917,7 +928,7 @@ function syncToServer() {
 }
 
 function loadServerReviews() {
-  return fetch('/api/reviews').then(function(r) { if (!r.ok) throw new Error('no server'); return r.json(); }).then(function(d) {
+  return fetch('/api/reviews').then(function(r) { return r.json(); }).then(function(d) {
     if (d.ad_reviews) {
       Object.keys(d.ad_reviews).forEach(function(k) {
         if (!adReviewData[k]) adReviewData[k] = d.ad_reviews[k];
@@ -1070,18 +1081,13 @@ function getAdReviewRemaining() {
 
 function renderAdReview() {
   if (!DATA || !DATA.ads || DATA.ads.length === 0) {
-    document.getElementById('adReviewSubtitle').textContent = 'All reviews complete';
-    document.getElementById('adProgressFill').style.width = '100%';
-    document.getElementById('adProgressText').innerHTML = '<strong>All reviews complete</strong>';
-    document.getElementById('advertorialTabs').innerHTML = '';
-    document.getElementById('dateTabs').innerHTML = '';
-    document.getElementById('adGrid').innerHTML = '<div class="review-all-done"><span class="emoji">&#x2705;</span>All ad reviews complete — ads launched on Meta</div>';
-    updateAdBadge();
+    document.getElementById('adReviewSubtitle').textContent = 'No ads to review';
+    document.getElementById('adGrid').innerHTML = '<div class="review-all-done"><span class="emoji">&#x1F4ED;</span>No ad data</div>';
     return;
   }
 
   var grouped = getAdsByAdvertorial();
-  var campaignOrder = ['Mechanism', 'Ranking', 'Authority', 'Retargeting', 'Batch 3 — Schwartz',
+  var campaignOrder = ['Mechanism', 'Ranking', 'Authority', 'Retargeting', 'Batch 3 — Schwartz', 'Top 5 — Gen 1 — Original', 'Top 5 — Gen 2 — Real Masks', 'Top 5 — Gen 3 — B&A Reverted + Mask Regen', 'Top 5 — Gen 4 — Exact LuxeBeam Ref',
     'Type 1 — Personal Confession', 'Type 2 — Family Witness', 'Type 3 — Anatomical Mechanism',
     'Type 4 — Raw B&A', 'Type 5 — Testimonial Nesting', 'Type 6 — Condition Blog'];
   var campaigns = Object.keys(grouped).sort(function(a, b) {
@@ -1127,6 +1133,7 @@ function renderAdReview() {
 
   renderAdCards(ads);
   updateAdBadge();
+  updateSubmitButton();
 }
 
 function renderAdCards(ads) {
@@ -1201,6 +1208,7 @@ function adDecide(id, decision) {
   localStorage.setItem(AD_REVIEW_KEY, JSON.stringify(adReviewData));
   syncToServer();
   renderAdReview();
+  updateSubmitButton();
 }
 function adComment(id, comment) {
   if (!adReviewData[id]) adReviewData[id] = {};
@@ -1211,6 +1219,62 @@ function adComment(id, comment) {
 function updateAdBadge() {
   var r = getAdReviewRemaining();
   document.getElementById('navBadgeAdReview').textContent = r;
+}
+
+
+function submitReviews() {
+  var reviews = {};
+  var approved = 0, rejected = 0, regen = 0;
+  DATA.ads.forEach(function(ad) {
+    var r = adReviewData[ad.id];
+    if (r && r.image_decision) {
+      reviews[ad.id] = {
+        decision: r.image_decision,
+        comment: r.comment || '',
+        campaign: ad.campaign,
+        ad_type: ad.ad_type,
+        image_filename: ad.image_filename || '',
+        reviewed_at: r.reviewed_at || new Date().toISOString()
+      };
+      if (r.image_decision === 'approved') approved++;
+      else if (r.image_decision === 'rejected') rejected++;
+      else if (r.image_decision === 'regen') regen++;
+    }
+  });
+  
+  var result = {
+    submitted_at: new Date().toISOString(),
+    total_reviewed: approved + rejected + regen,
+    approved: approved,
+    rejected: rejected,
+    regen: regen,
+    reviews: reviews
+  };
+  
+  var blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'ad-reviews-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  alert('Reviews submitted! ' + approved + ' approved, ' + rejected + ' rejected, ' + regen + ' regen.\nJSON downloaded — drop it in ~/Downloads for auto-processing.');
+}
+
+function updateSubmitButton() {
+  var reviewed = DATA.ads.filter(function(a) { var d = adReviewData[a.id]; return d && d.image_decision; }).length;
+  var container = document.getElementById('submitReviewsContainer');
+  var stats = document.getElementById('submitStats');
+  if (reviewed > 0) {
+    container.style.display = 'block';
+    var approved = DATA.ads.filter(function(a) { var d = adReviewData[a.id]; return d && d.image_decision === 'approved'; }).length;
+    var rejected = DATA.ads.filter(function(a) { var d = adReviewData[a.id]; return d && d.image_decision === 'rejected'; }).length;
+    var regen = DATA.ads.filter(function(a) { var d = adReviewData[a.id]; return d && d.image_decision === 'regen'; }).length;
+    stats.innerHTML = '✅ ' + approved + ' approved &nbsp; ❌ ' + rejected + ' rejected &nbsp; 🔄 ' + regen + ' regen';
+  } else {
+    container.style.display = 'none';
+  }
 }
 
 /* ===== AD LAUNCHER ===== */
@@ -1234,12 +1298,11 @@ function renderAdLauncher() {
 function renderLauncherRoadmap() {
   var stages = [
     { icon: '&#x1F50D;', label: 'Research', key: 'Research' },
-    { icon: '&#x1F4CA;', label: 'Ad Intel', key: 'Ad Intel' },
     { icon: '&#x270D;&#xFE0F;', label: 'Copy', key: 'Copy' },
     { icon: '&#x1F3A8;', label: 'Images', key: 'Images' },
-    { icon: '&#x1F6E0;&#xFE0F;', label: 'Build', key: 'Build' },
-    { icon: '&#x1F680;', label: 'Deploy', key: 'Deploy' },
-    { icon: '&#x2705;', label: 'QA', key: 'QA' }
+    { icon: '&#x1F441;&#xFE0F;', label: 'Preview', key: 'preview' },
+    { icon: '&#x1F680;', label: 'Launch', key: 'launch' },
+    { icon: '&#x1F4E1;', label: 'Live', key: 'live' }
   ];
 
   // Determine statuses from pipeline data
@@ -1247,20 +1310,35 @@ function renderLauncherRoadmap() {
   var stageStatusMap = {};
   pipelineStages.forEach(function(s) { stageStatusMap[s.name] = s.status; });
 
+  // Check launch state
+  var hasLaunchState = LAUNCH_STATE && LAUNCH_STATE.state && LAUNCH_STATE.state.campaign_id;
+  var campaignPaused = LAUNCH_STATE && LAUNCH_STATE.state && META_ADS && META_ADS.campaign && META_ADS.campaign.status === 'PAUSED';
+
   var html = '';
-  var computedStatuses = [];
   stages.forEach(function(stage, i) {
     var status = 'pending';
     if (stageStatusMap[stage.key] === 'complete') status = 'done';
     else if (stageStatusMap[stage.key] === 'broken' || stageStatusMap[stage.key] === 'active') status = 'active';
-    computedStatuses.push(status);
+
+    // Override for launcher-specific stages
+    if (stage.key === 'preview') {
+      var allAds = getAllMetaAds();
+      var reviewed = allAds.filter(function(a) { var r = launcherReviewData[a.name]; return r && r.decision; }).length;
+      status = reviewed === allAds.length && allAds.length > 0 ? 'done' : allAds.length > 0 ? 'active' : 'pending';
+    }
+    if (stage.key === 'launch') {
+      status = hasLaunchState ? 'done' : 'pending';
+    }
+    if (stage.key === 'live') {
+      status = hasLaunchState && !campaignPaused ? 'done' : hasLaunchState ? 'active' : 'pending';
+    }
 
     var chipClass = status === 'done' ? 'badge-green' : status === 'active' ? 'badge-yellow' : 'badge-gray';
     var chipText = status === 'done' ? 'Done' : status === 'active' ? 'In Progress' : 'Pending';
-
+    if (stage.key === 'live' && hasLaunchState && campaignPaused) chipText = 'Paused';
 
     if (i > 0) {
-      var connDone = status === 'done' && computedStatuses[i - 1] === 'done';
+      var connDone = status === 'done' || stages[i-1] && (stageStatusMap[stages[i-1].key] === 'complete');
       html += '<div class="roadmap-connector' + (connDone ? ' done' : '') + '"></div>';
     }
     html += '<div class="roadmap-stage ' + status + '">' +
@@ -1556,11 +1634,11 @@ function renderKnowledge() {
 }
 
 function fetchKnowledge() {
-  fetch('knowledge.json?t=' + Date.now()).then(function(r) { if (!r.ok) throw new Error('no data'); return r.json(); }).then(function(d) {
+  fetch('/api/knowledge').then(function(r) { return r.json(); }).then(function(d) {
     KNOWLEDGE = d;
     renderKnowledge();
   }).catch(function() {
-    document.getElementById('skillGrid').innerHTML = '<div class="review-all-done"><span class="emoji">&#x26A0;&#xFE0F;</span>No knowledge data available</div>';
+    document.getElementById('skillGrid').innerHTML = '<div class="review-all-done"><span class="emoji">&#x26A0;&#xFE0F;</span>Failed to load knowledge data</div>';
   });
 }
 
@@ -1691,20 +1769,20 @@ function refreshAllData() {
     LAUNCH_STATE = d;
   }).catch(function() {});
 
-  // Fetch knowledge from static file
-  fetch('knowledge.json?t=' + Date.now()).then(function(r) { if (!r.ok) throw new Error('no data'); return r.json(); }).then(function(d) {
+  // Fetch knowledge
+  fetch('/api/knowledge').then(function(r) { return r.json(); }).then(function(d) {
     KNOWLEDGE = d;
   }).catch(function() {});
 }
 
 /* ===== INIT ===== */
 function init() {
-  loadServerReviews().catch(function(){}).finally(function() {
+  loadServerReviews().finally(function() {
     // Parallel fetch all data sources
     var dataP = fetch('dashboard_data.json?t=' + Date.now()).then(function(r) { return r.json(); });
     var metaP = fetch('/api/meta-ads').then(function(r) { return r.json(); }).catch(function() { return null; });
     var launchP = fetch('/api/launch-status').then(function(r) { return r.json(); }).catch(function() { return null; });
-    var knowledgeP = fetch('knowledge.json?t=' + Date.now()).then(function(r) { return r.json(); }).catch(function() { return null; });
+    var knowledgeP = fetch('/api/knowledge').then(function(r) { return r.json(); }).catch(function() { return null; });
 
     Promise.all([dataP, metaP, launchP, knowledgeP]).then(function(results) {
       DATA = results[0];
