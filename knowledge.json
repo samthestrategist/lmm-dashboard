@@ -1,0 +1,138 @@
+{
+  "stats": {
+    "sources_tracked": 13,
+    "skills_extracted": 16,
+    "knowledge_entries": 16,
+    "pending_bookmarks": 0
+  },
+  "skills": [
+    {
+      "file": "8-figure-funnel-sop-carlweische.md",
+      "title": "8 Figure Funnel Sop",
+      "source": "@carlweische",
+      "category": "funnel-strategy",
+      "value": "high",
+      "content_preview": "--- title: \"8-Figure Client Funnel SOP (6-Step Process)\" source: \"@CarlWeische\" tweet_id: \"2019441400027259280\" category: funnel-strategy agents: [orchestrator, researcher, copywriter, builder] value: HIGH created: 2026-03-02 linked_resource: \"https://docs.google.com/document/d/1AtNf8mtvWjmQPqwT_yke"
+    },
+    {
+      "file": "advertorial-funnel-strategy-carlweische.md",
+      "title": "Advertorial Funnel Strategy",
+      "source": "@carlweische",
+      "category": "advertorial-funnels",
+      "value": "high",
+      "content_preview": "--- title: \"Advertorial Funnel Strategy for Cold Traffic\" source: \"@CarlWeische\" tweet_id: \"2013643118801797331\" category: advertorial-funnels agents: [copywriter, researcher] value: HIGH created: 2026-03-02 ---  # Advertorial Funnel Strategy for Cold Traffic  ## Core Insight Cold traffic ($3/click)"
+    },
+    {
+      "file": "advertorial-funnels-advertorial-funnel-structure-cold-traff-CarlWeische.md",
+      "title": "Advertorial Funnels Advertorial Funnel Structure Cold Traff",
+      "source": "@CarlWeische",
+      "category": "advertorial-funnels",
+      "value": "high",
+      "content_preview": "# Advertorial Funnel Structure: Cold Traffic Warming via Education-First Pre-Sell Pages # Source: @CarlWeische # Type: framework # Category: advertorial-funnels # Confidence: medium # Validated as of: 2026-03-03 # Staleness window: 180 days # Evidence basis: $1.5M/mo revenue claim from one beauty cl"
+    },
+    {
+      "file": "agent-team-orchestration-mikefutia.md",
+      "title": "Agent Team Orchestration",
+      "source": "@mikefutia",
+      "category": "agent-orchestration",
+      "value": "medium",
+      "content_preview": "--- title: \"Claude Code Agent Teams Orchestration\" source: \"@mikefutia\" tweet_id: \"2028495411984638106\" category: agent-orchestration agents: [orchestrator] value: MEDIUM created: 2026-03-02 engagement: \"336 likes, 15 RTs\" ---  # Claude Code Agent Teams Orchestration  ## Core Insight Claude Code Age"
+    },
+    {
+      "file": "competitive-creative-intelligence-ai-powered-competitive-creative-pipeline-codyschneiderxx.md",
+      "title": "Competitive Creative Intelligence Ai Powered Competitive Creative Pipeline",
+      "source": "@codyschneiderxx",
+      "category": "competitive-creative-intelligence",
+      "value": "medium",
+      "content_preview": "# AI-Powered Competitive Creative Pipeline: Scrape \u2192 Analyze Gaps \u2192 Generate \u2192 Test Loop # Source: @codyschneiderxx # Type: framework # Category: competitive-creative-intelligence # Confidence: medium # Validated as of: 2026-03-03 # Staleness window: 180 days # Evidence basis: none \u2014 described workf"
+    },
+    {
+      "file": "copywriting-frameworks-philrivers.md",
+      "title": "Copywriting Frameworks",
+      "source": "@philrivers",
+      "category": "copywriting-frameworks",
+      "value": "high",
+      "content_preview": "--- title: \"5 Copywriting Frameworks (PASTOR, AIDA, BAB, PPPP, SSS)\" source: \"@thePhilRivers\" tweet_id: \"2028636610732978563\" category: copywriting-frameworks agents: [copywriter] value: MEDIUM created: 2026-03-02 ---  # 5 Copywriting Frameworks Reference  ## Frameworks (from tweet) 1. **PASTOR** \u2014"
+    },
+    {
+      "file": "dtc-advertorial-copywriting-framework-carlweische.md",
+      "title": "Dtc Advertorial Copywriting Framework",
+      "source": "@carlweische",
+      "category": "copywriting-frameworks",
+      "value": "high",
+      "content_preview": "--- title: \"$100M DTC Advertorial Copywriting Framework (Performance Golf)\" source: \"@CarlWeische\" tweet_id: \"2027051542352736311\" category: copywriting-frameworks agents: [copywriter] value: HIGH created: 2026-03-02 ---  # $100M DTC Advertorial Copywriting Framework  ## Core Insight Performance Gol"
+    },
+    {
+      "file": "google-ads-automation-codyschneider.md",
+      "title": "Google Ads Automation",
+      "source": "@codyschneider",
+      "category": "google-ads-automation",
+      "value": "high",
+      "content_preview": "--- title: \"Claude Code Google Ads Zero-to-One Automation\" source: \"@codyschneiderxx\" tweet_id: \"2028576226302910911\" category: google-ads-automation agents: [researcher, builder] value: HIGH created: 2026-03-02 ---  # Claude Code Google Ads Zero-to-One Automation  ## Core Insight Use Claude Code +"
+    },
+    {
+      "file": "google-ads-competitor-conquest-comparison-keyword-conquest-3-bucket-ta-blvckledge.md",
+      "title": "Google Ads Competitor Conquest Comparison Keyword Conquest 3 Bucket Ta",
+      "source": "@blvckledge",
+      "category": "google-ads-competitor-conquest",
+      "value": "medium",
+      "content_preview": "--- title: \"Comparison Keyword Conquest: 3-Bucket Strategy + 2 Landing Page Formats\" source: \"@blvckledge\" tweet_id: \"2028394203139469739\" category: google-ads-competitor-conquest agents: [researcher, copywriter, builder] value: HIGH created: 2026-03-02 confidence: medium evidence: \"Claims 'five and"
+    },
+    {
+      "file": "landing-page-elements-10m-brands-carlweische.md",
+      "title": "Landing Page Elements 10M Brands",
+      "source": "@carlweische",
+      "category": "landing-page-optimization",
+      "value": "medium",
+      "content_preview": "--- title: \"6 Landing Page Elements from 38 Brands Doing $10M+/yr\" source: \"@CarlWeische\" tweet_id: \"1583136770371239937\" category: landing-page-optimization agents: [builder, copywriter] value: HIGH created: 2026-03-02 engagement: \"4606 likes, 657 RTs\" media_note: \"The 6 specific elements are detai"
+    },
+    {
+      "file": "landing-page-iteration-charafecomwize.md",
+      "title": "Landing Page Iteration",
+      "source": "@charafecomwize",
+      "category": "landing-page-optimization",
+      "value": "medium",
+      "content_preview": "--- title: \"Landing Page Iteration Strategy \u2014 Test 20 Versions Not 1\" source: \"@charaf_ecomwize\" tweet_id: \"2028227770413715858\" category: landing-page-optimization agents: [builder] value: HIGH created: 2026-03-02 ---  # Landing Page Iteration Strategy \u2014 Test 20 Not 1  ## Core Insight \"Your landing"
+    },
+    {
+      "file": "meta-ads-diagnostic-skill-carlosvillu.md",
+      "title": "Meta Ads Diagnostic Skill",
+      "source": "@carlosvillu",
+      "category": "meta-ads",
+      "value": "medium",
+      "content_preview": "--- title: \"Meta Ads Diagnostic Skill for Claude Code\" source: \"@carlosvillu\" tweet_id: \"2028379794539204933\" category: meta-ads agents: [orchestrator] value: MEDIUM created: 2026-03-02 engagement: \"720 likes, 47 RTs\" source_language: \"Spanish\" ---  # Meta Ads Diagnostic Skill  ## Core Insight A Cla"
+    },
+    {
+      "file": "native-ad-storytelling-advertisingjan.md",
+      "title": "Native Ad Storytelling",
+      "source": "@advertisingjan",
+      "category": "native-ads",
+      "value": "medium",
+      "content_preview": "--- title: \"Native Ad Storytelling Principle\" source: \"@advertising_jan\" tweet_id: \"2028508889424281757\" category: native-ads agents: [copywriter] value: HIGH created: 2026-03-02 ---  # Native Ad Storytelling Principle  ## Core Insight The story always wins. Effective native ads sell a STORY that le"
+    },
+    {
+      "file": "seo-keyword-research-7step-connorgillivan.md",
+      "title": "Seo Keyword Research 7Step",
+      "source": "@connorgillivan",
+      "category": "seo-strategy",
+      "value": "medium",
+      "content_preview": "--- title: \"SEO Keyword Research 7-Step Cheat Sheet\" source: \"@ConnorGillivan\" tweet_id: \"2028469636811956422\" category: seo-strategy agents: [researcher, copywriter] value: HIGH created: 2026-03-02 ---  # SEO Keyword Research 7-Step Cheat Sheet  ## Core Insight Keyword research is the backbone of S"
+    },
+    {
+      "file": "tiktok-fear-content-funnel-knoxtwts.md",
+      "title": "Tiktok Fear Content Funnel",
+      "source": "@knoxtwts",
+      "category": "social-content-strategy",
+      "value": "high",
+      "content_preview": "--- title: \"TikTok Fear-Based AI Content Funnel\" source: \"@knoxtwts\" tweet_id: \"2028586059777347650\" category: social-content-strategy agents: [copywriter] value: HIGH created: 2026-03-02 ethical_note: \"Gray zone tactic \u2014 uses fear psychology and planted comments. Use with caution.\" ---  # TikTok Fe"
+    },
+    {
+      "file": "video-ad-cpa-structure-jxrdanb.md",
+      "title": "Video Ad Cpa Structure",
+      "source": "@jxrdanb",
+      "category": "video-ad-creative",
+      "value": "medium",
+      "content_preview": "--- title: \"Video Ad CPA Structure \u2014 Delay Product Reveal\" source: \"@JxrdanB_\" tweet_id: \"2028261313294778695\" category: video-ad-creative agents: [copywriter] value: HIGH created: 2026-03-02 ---  # Video Ad CPA Structure \u2014 Delay Product Reveal  ## Core Insight \"Do not reveal your product until 20+"
+    }
+  ]
+}
