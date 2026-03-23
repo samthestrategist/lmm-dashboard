@@ -916,7 +916,7 @@ function syncToServer() {
 }
 
 function loadServerReviews() {
-  return fetch('/api/reviews').then(function(r) { return r.json(); }).then(function(d) {
+  return fetch('/api/reviews').then(function(r) { if (!r.ok) throw new Error('no server'); return r.json(); }).then(function(d) {
     if (d.ad_reviews) {
       Object.keys(d.ad_reviews).forEach(function(k) {
         if (!adReviewData[k]) adReviewData[k] = d.ad_reviews[k];
@@ -1707,7 +1707,7 @@ function refreshAllData() {
 
 /* ===== INIT ===== */
 function init() {
-  loadServerReviews().finally(function() {
+  loadServerReviews().catch(function(){}).finally(function() {
     // Parallel fetch all data sources
     var dataP = fetch('dashboard_data.json?t=' + Date.now()).then(function(r) { return r.json(); });
     var metaP = fetch('/api/meta-ads').then(function(r) { return r.json(); }).catch(function() { return null; });
