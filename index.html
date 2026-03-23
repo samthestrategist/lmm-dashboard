@@ -1071,7 +1071,12 @@ function getAdReviewRemaining() {
 function renderAdReview() {
   if (!DATA || !DATA.ads || DATA.ads.length === 0) {
     document.getElementById('adReviewSubtitle').textContent = 'All reviews complete';
-    document.getElementById('adGrid').innerHTML = '<div class="review-all-done"><span class="emoji">✅</span>All ad reviews complete — ads launched on Meta</div>';
+    document.getElementById('adProgressFill').style.width = '100%';
+    document.getElementById('adProgressText').innerHTML = '<strong>All reviews complete</strong>';
+    document.getElementById('advertorialTabs').innerHTML = '';
+    document.getElementById('dateTabs').innerHTML = '';
+    document.getElementById('adGrid').innerHTML = '<div class="review-all-done"><span class="emoji">&#x2705;</span>All ad reviews complete — ads launched on Meta</div>';
+    updateAdBadge();
     return;
   }
 
@@ -1229,11 +1234,12 @@ function renderAdLauncher() {
 function renderLauncherRoadmap() {
   var stages = [
     { icon: '&#x1F50D;', label: 'Research', key: 'Research' },
+    { icon: '&#x1F4CA;', label: 'Ad Intel', key: 'Ad Intel' },
     { icon: '&#x270D;&#xFE0F;', label: 'Copy', key: 'Copy' },
     { icon: '&#x1F3A8;', label: 'Images', key: 'Images' },
-    { icon: '&#x1F441;&#xFE0F;', label: 'Preview', key: 'preview' },
-    { icon: '&#x1F680;', label: 'Launch', key: 'launch' },
-    { icon: '&#x1F4E1;', label: 'Live', key: 'live' }
+    { icon: '&#x1F6E0;&#xFE0F;', label: 'Build', key: 'Build' },
+    { icon: '&#x1F680;', label: 'Deploy', key: 'Deploy' },
+    { icon: '&#x2705;', label: 'QA', key: 'QA' }
   ];
 
   // Determine statuses from pipeline data
@@ -1241,35 +1247,20 @@ function renderLauncherRoadmap() {
   var stageStatusMap = {};
   pipelineStages.forEach(function(s) { stageStatusMap[s.name] = s.status; });
 
-  // Check launch state
-  var hasLaunchState = LAUNCH_STATE && LAUNCH_STATE.state && LAUNCH_STATE.state.campaign_id;
-  var campaignPaused = LAUNCH_STATE && LAUNCH_STATE.state && META_ADS && META_ADS.campaign && META_ADS.campaign.status === 'PAUSED';
-
   var html = '';
+  var computedStatuses = [];
   stages.forEach(function(stage, i) {
     var status = 'pending';
     if (stageStatusMap[stage.key] === 'complete') status = 'done';
     else if (stageStatusMap[stage.key] === 'broken' || stageStatusMap[stage.key] === 'active') status = 'active';
-
-    // Override for launcher-specific stages
-    if (stage.key === 'preview') {
-      var allAds = getAllMetaAds();
-      var reviewed = allAds.filter(function(a) { var r = launcherReviewData[a.name]; return r && r.decision; }).length;
-      status = reviewed === allAds.length && allAds.length > 0 ? 'done' : allAds.length > 0 ? 'active' : 'pending';
-    }
-    if (stage.key === 'launch') {
-      status = (hasLaunchState || ADS_LAUNCHED) ? 'done' : 'pending';
-    }
-    if (stage.key === 'live') {
-      status = ADS_LAUNCHED ? 'done' : hasLaunchState && !campaignPaused ? 'done' : hasLaunchState ? 'active' : 'pending';
-    }
+    computedStatuses.push(status);
 
     var chipClass = status === 'done' ? 'badge-green' : status === 'active' ? 'badge-yellow' : 'badge-gray';
     var chipText = status === 'done' ? 'Done' : status === 'active' ? 'In Progress' : 'Pending';
-    if (stage.key === 'live' && hasLaunchState && campaignPaused) chipText = 'Paused';
+
 
     if (i > 0) {
-      var connDone = status === 'done' || stages[i-1] && (stageStatusMap[stages[i-1].key] === 'complete');
+      var connDone = status === 'done' && computedStatuses[i - 1] === 'done';
       html += '<div class="roadmap-connector' + (connDone ? ' done' : '') + '"></div>';
     }
     html += '<div class="roadmap-stage ' + status + '">' +
@@ -1569,12 +1560,7 @@ function fetchKnowledge() {
     KNOWLEDGE = d;
     renderKnowledge();
   }).catch(function() {
-    fetch('/api/knowledge').then(function(r) { return r.json(); }).then(function(d) {
-      KNOWLEDGE = d;
-      renderKnowledge();
-    }).catch(function() {
-      document.getElementById('skillGrid').innerHTML = '<div class="review-all-done"><span class="emoji">&#x26A0;&#xFE0F;</span>No knowledge data available</div>';
-    });
+    document.getElementById('skillGrid').innerHTML = '<div class="review-all-done"><span class="emoji">&#x26A0;&#xFE0F;</span>No knowledge data available</div>';
   });
 }
 
@@ -1705,8 +1691,8 @@ function refreshAllData() {
     LAUNCH_STATE = d;
   }).catch(function() {});
 
-  // Fetch knowledge
-  fetch('/api/knowledge').then(function(r) { return r.json(); }).then(function(d) {
+  // Fetch knowledge from static file
+  fetch('knowledge.json?t=' + Date.now()).then(function(r) { if (!r.ok) throw new Error('no data'); return r.json(); }).then(function(d) {
     KNOWLEDGE = d;
   }).catch(function() {});
 }
